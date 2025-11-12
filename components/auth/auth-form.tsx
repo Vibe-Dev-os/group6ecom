@@ -170,9 +170,9 @@ export function AuthForm() {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800">
+              <TabsTrigger value="login" className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white font-medium">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="text-gray-700 dark:text-gray-300 data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white font-medium">Sign Up</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login" className="space-y-4">
@@ -217,8 +217,8 @@ export function AuthForm() {
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button type="submit" className="w-full bg-blue-600 text-white hover:bg-blue-700 font-medium" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />}
                     Sign In
                   </Button>
                 </form>
@@ -300,8 +300,8 @@ export function AuthForm() {
                       <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button type="submit" className="w-full bg-blue-600 text-white hover:bg-blue-700 font-medium" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />}
                     Create Account
                   </Button>
                 </form>

@@ -7,10 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Pencil, Trash2, Search } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, Package, FileText, Image, DollarSign, Hash, Tag, Activity } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -65,6 +66,8 @@ export default function ProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<typeof initialProducts[0] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<typeof initialProducts[0] | null>(null)
+  const [alertMessage, setAlertMessage] = useState<{type: 'success' | 'error', message: string} | null>(null)
 
   // Fetch products from API on mount
   useEffect(() => {
@@ -162,7 +165,7 @@ export default function ProductsPage() {
       form.reset()
     } catch (error) {
       console.error("Failed to save product:", error)
-      alert("Failed to save product. Please try again.")
+      setAlertMessage({type: 'error', message: 'Failed to save product. Please try again.'})
     } finally {
       setIsLoading(false)
     }
@@ -170,32 +173,41 @@ export default function ProductsPage() {
 
   const handleEdit = (product: any) => {
     setEditingProduct(product)
-    form.reset({
-      name: product.name,
-      description: product.description,
-      price: String(product.price),
-      category: product.category,
-      stock: String(product.stock),
-      status: product.status,
-      images: product.images ? product.images.join(', ') : "",
-    })
     setIsDialogOpen(true)
+    // Use setTimeout to prevent text selection highlighting
+    setTimeout(() => {
+      form.reset({
+        name: product.name,
+        description: product.description,
+        price: String(product.price),
+        category: product.category,
+        stock: String(product.stock),
+        status: product.status,
+        images: product.images ? product.images.join(', ') : "",
+      })
+      // Clear any text selection
+      if (window.getSelection) {
+        window.getSelection()?.removeAllRanges()
+      }
+    }, 100)
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      try {
-        const response = await fetch(`/api/products/${id}`, {
-          method: "DELETE",
-        })
-        
-        if (response.ok) {
-          await fetchProducts() // Refresh products from server
-        }
-      } catch (error) {
-        console.error("Failed to delete product:", error)
-        alert("Failed to delete product. Please try again.")
+    try {
+      const response = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+      })
+      
+      if (response.ok) {
+        await fetchProducts() // Refresh products from server
+        setProductToDelete(null)
+        setAlertMessage({type: 'success', message: 'Product deleted successfully!'})
+      } else {
+        setAlertMessage({type: 'error', message: 'Failed to delete product. Please try again.'})
       }
+    } catch (error) {
+      console.error("Failed to delete product:", error)
+      setAlertMessage({type: 'error', message: 'Failed to delete product. Please try again.'})
     }
   }
 
@@ -206,9 +218,9 @@ export default function ProductsPage() {
   }
 
   const getStockStatus = (stock: number) => {
-    if (stock === 0) return { label: "Out of Stock", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300" }
-    if (stock < 10) return { label: "Low Stock", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" }
-    return { label: "In Stock", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" }
+    if (stock === 0) return { label: "Out of Stock", color: "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700 font-medium" }
+    if (stock < 10) return { label: "Low Stock", color: "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-700 font-medium" }
+    return { label: "In Stock", color: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700 font-medium" }
   }
 
   return (
@@ -239,9 +251,12 @@ export default function ProductsPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Name</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <Package className="h-4 w-4" />
+                        Product Name
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter product name" {...field} />
+                        <Input placeholder="Enter product name" className="border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50" autoFocus={false} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -252,11 +267,14 @@ export default function ProductsPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Description
+                      </FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Enter product description" 
-                          className="min-h-[100px]"
+                          className="min-h-[100px] border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50"
                           {...field} 
                         />
                       </FormControl>
@@ -269,11 +287,14 @@ export default function ProductsPage() {
                   name="images"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Images (URLs)</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <Image className="h-4 w-4" />
+                        Product Images (URLs)
+                      </FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Enter image URLs separated by commas&#10;Example:&#10;https://example.com/image1.jpg, https://example.com/image2.jpg"
-                          className="min-h-[80px]"
+                          className="min-h-[80px] border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50"
                           {...field} 
                         />
                       </FormControl>
@@ -290,9 +311,12 @@ export default function ProductsPage() {
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Price (₱)</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4" />
+                          Price (₱)
+                        </FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                          <Input type="number" step="0.01" placeholder="0.00" className="border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -303,9 +327,12 @@ export default function ProductsPage() {
                     name="stock"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Stock Quantity</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          Stock Quantity
+                        </FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0" {...field} />
+                          <Input type="number" placeholder="0" className="border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -318,10 +345,13 @@ export default function ProductsPage() {
                     name="category"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Category</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <Tag className="h-4 w-4" />
+                          Category
+                        </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50">
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                           </FormControl>
@@ -342,10 +372,13 @@ export default function ProductsPage() {
                     name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Status</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <Activity className="h-4 w-4" />
+                          Status
+                        </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50">
                               <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                           </FormControl>
@@ -361,10 +394,10 @@ export default function ProductsPage() {
                   />
                 </div>
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="border-white/30 text-foreground hover:bg-white/10">
                     Cancel
                   </Button>
-                  <Button type="submit">
+                  <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-600">
                     {editingProduct ? "Update Product" : "Add Product"}
                   </Button>
                 </DialogFooter>
@@ -428,7 +461,8 @@ export default function ProductsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(product.id)}
+                        onClick={() => setProductToDelete(product)}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50/50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -440,6 +474,49 @@ export default function ProductsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!productToDelete} onOpenChange={() => setProductToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{productToDelete?.name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => productToDelete && handleDelete(productToDelete.id)}
+              className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success/Error Alert Dialog */}
+      <AlertDialog open={!!alertMessage} onOpenChange={() => setAlertMessage(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {alertMessage?.type === 'success' ? 'Success' : 'Error'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertMessage?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setAlertMessage(null)}
+              className="bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-600"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

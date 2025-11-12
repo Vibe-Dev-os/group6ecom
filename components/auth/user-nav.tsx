@@ -26,10 +26,10 @@ export function UserNav() {
   if (!session) {
     return (
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" asChild className="text-foreground hover:text-foreground hover:bg-white/10">
+        <Button variant="ghost" asChild className="h-10 px-4 text-foreground hover:text-foreground hover:bg-white/10 border-2 border-blue-500">
           <Link href="/auth/signin">Sign In</Link>
         </Button>
-        <Button size="sm" asChild className="bg-blue-600 text-white hover:bg-blue-700">
+        <Button asChild className="h-10 px-4 bg-blue-600 text-white hover:bg-blue-700">
           <Link href="/auth/signup">Sign Up</Link>
         </Button>
       </div>

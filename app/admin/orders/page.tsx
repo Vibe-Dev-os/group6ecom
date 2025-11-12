@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, Search, Package, Calendar, User, Loader2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface Order {
   id: string
@@ -46,6 +48,7 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [alertMessage, setAlertMessage] = useState<{type: 'success' | 'error', message: string} | null>(null)
 
   useEffect(() => {
     fetchOrders()
@@ -87,10 +90,10 @@ export default function OrdersPage() {
 
       // Refresh orders
       await fetchOrders()
-      alert("Order updated successfully!")
+      setAlertMessage({type: 'success', message: 'Order updated successfully!'})
     } catch (err) {
       console.error("Error updating order:", err)
-      alert("Failed to update order")
+      setAlertMessage({type: 'error', message: 'Failed to update order'})
     }
   }
 
@@ -130,17 +133,19 @@ export default function OrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "delivered":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+        return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700 font-medium"
       case "shipped":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+        return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-700 font-medium"
+      case "confirmed":
+        return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-300 dark:border-emerald-700 font-medium"
       case "processing":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-700 font-medium"
       case "pending":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+        return "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/50 dark:text-orange-300 dark:border-orange-700 font-medium"
       case "cancelled":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+        return "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700 font-medium"
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/50 dark:text-gray-300 dark:border-gray-700 font-medium"
     }
   }
 
@@ -158,16 +163,17 @@ export default function OrdersPage() {
             placeholder="Search by order ID, customer name, or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Orders</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
             <SelectItem value="processing">Processing</SelectItem>
             <SelectItem value="shipped">Shipped</SelectItem>
             <SelectItem value="delivered">Delivered</SelectItem>
@@ -221,7 +227,7 @@ export default function OrdersPage() {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
+                      <DialogContent className="max-w-3xl max-h-[90vh]">
                         <DialogHeader>
                           <DialogTitle>Order Details - {order.orderNumber}</DialogTitle>
                           <DialogDescription>
@@ -229,49 +235,79 @@ export default function OrdersPage() {
                           </DialogDescription>
                         </DialogHeader>
                         {selectedOrder && (
-                          <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                              <Card>
-                                <CardHeader className="pb-3">
-                                  <CardTitle className="text-sm flex items-center gap-2">
-                                    <User className="h-4 w-4" />
+                          <ScrollArea className="max-h-[60vh] pr-4">
+                            <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-6">
+                              <Card className="border-white/20 bg-background/50">
+                                <CardHeader className="pb-4">
+                                  <CardTitle className="text-base flex items-center gap-2 font-semibold">
+                                    <User className="h-5 w-5 text-blue-500" />
                                     Customer Information
                                   </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-2 text-sm">
-                                  <div>
-                                    <p className="font-medium">{selectedOrder.customerInfo.firstName} {selectedOrder.customerInfo.lastName}</p>
-                                    <p className="text-muted-foreground">{selectedOrder.customerInfo.email}</p>
+                                <CardContent className="space-y-4">
+                                  <div className="py-2 border-b border-white/10">
+                                    <span className="text-muted-foreground font-medium text-sm">Name</span>
+                                    <p className="font-semibold text-foreground mt-1">{selectedOrder.customerInfo.firstName} {selectedOrder.customerInfo.lastName}</p>
+                                  </div>
+                                  <div className="py-2">
+                                    <span className="text-muted-foreground font-medium text-sm">Email</span>
+                                    <p className="font-semibold text-foreground mt-1 break-all">{selectedOrder.customerInfo.email}</p>
                                   </div>
                                 </CardContent>
                               </Card>
 
-                              <Card>
-                                <CardHeader className="pb-3">
-                                  <CardTitle className="text-sm flex items-center gap-2">
-                                    <Calendar className="h-4 w-4" />
+                              <Card className="border-white/20 bg-background/50">
+                                <CardHeader className="pb-4">
+                                  <CardTitle className="text-base flex items-center gap-2 font-semibold">
+                                    <Calendar className="h-5 w-5 text-green-500" />
                                     Order Info
                                   </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-2 text-sm">
-                                  <div>
-                                    <p className="text-muted-foreground">Order Date</p>
-                                    <p className="font-medium">{new Date(selectedOrder.date).toLocaleDateString()}</p>
+                                <CardContent className="space-y-4">
+                                  <div className="py-2 border-b border-white/10">
+                                    <span className="text-muted-foreground font-medium text-sm">Order Date</span>
+                                    <p className="font-semibold text-foreground mt-1">{new Date(selectedOrder.date).toLocaleDateString()}</p>
                                   </div>
-                                  <div>
-                                    <p className="text-muted-foreground">Total</p>
-                                    <p className="font-medium">₱{selectedOrder.total.toFixed(2)}</p>
+                                  <div className="py-2">
+                                    <span className="text-muted-foreground font-medium text-sm">Total</span>
+                                    <p className="font-semibold text-foreground text-lg mt-1">₱{selectedOrder.total.toFixed(2)}</p>
                                   </div>
                                 </CardContent>
                               </Card>
                             </div>
 
                             <div>
+                              <h4 className="font-medium mb-2">Update Order Status</h4>
+                              <Select
+                                value={selectedOrder.status}
+                                onValueChange={(value) => {
+                                  updateOrderStatus(selectedOrder.id, value)
+                                  setSelectedOrder({ ...selectedOrder, status: value as typeof selectedOrder.status })
+                                }}
+                              >
+                                <SelectTrigger className="w-full border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                                  <SelectItem value="processing">Processing</SelectItem>
+                                  <SelectItem value="shipped">Shipped</SelectItem>
+                                  <SelectItem value="delivered">Delivered</SelectItem>
+                                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <Separator />
+
+                            <div>
                               <h4 className="font-medium mb-2 flex items-center gap-2">
                                 <Package className="h-4 w-4" />
                                 Order Items
                               </h4>
-                              <div className="border rounded-lg divide-y">
+                              <div className="border border-white/30 rounded-lg divide-y divide-white/20 bg-background/50">
                                 {selectedOrder.items.map((item, index) => (
                                   <div key={index} className="flex justify-between items-center p-4">
                                     <div>
@@ -284,37 +320,14 @@ export default function OrdersPage() {
                               </div>
                             </div>
 
-                            <div>
+                            <div className="border border-white/30 rounded-lg p-4 bg-background/50">
                               <h4 className="font-medium mb-2">Shipping Address</h4>
                               <p className="text-sm text-muted-foreground">
                                 {selectedOrder.shippingAddress.address}, {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.region} {selectedOrder.shippingAddress.zipCode}, {selectedOrder.shippingAddress.country}
                               </p>
                             </div>
-
-                            <Separator />
-
-                            <div>
-                              <h4 className="font-medium mb-2">Update Order Status</h4>
-                              <Select
-                                value={selectedOrder.status}
-                                onValueChange={(value) => {
-                                  updateOrderStatus(selectedOrder.id, value)
-                                  setSelectedOrder({ ...selectedOrder, status: value as typeof selectedOrder.status })
-                                }}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">Pending</SelectItem>
-                                  <SelectItem value="processing">Processing</SelectItem>
-                                  <SelectItem value="shipped">Shipped</SelectItem>
-                                  <SelectItem value="delivered">Delivered</SelectItem>
-                                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
                           </div>
+                          </ScrollArea>
                         )}
                       </DialogContent>
                     </Dialog>
@@ -325,6 +338,28 @@ export default function OrdersPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Success/Error Alert Dialog */}
+      <AlertDialog open={!!alertMessage} onOpenChange={() => setAlertMessage(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {alertMessage?.type === 'success' ? 'Success' : 'Error'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertMessage?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setAlertMessage(null)}
+              className="bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-600"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

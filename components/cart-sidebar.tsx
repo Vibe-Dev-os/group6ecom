@@ -61,7 +61,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               <div className="space-y-4">
                 {items.map((item) => (
                   <div key={`${item.productId}-${item.color}-${item.size}`} className="flex gap-4">
-                    <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-border">
+                    <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-white/30">
                       <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" quality={100} unoptimized />
                     </div>
                     <div className="flex flex-1 flex-col">
@@ -77,12 +77,12 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       <div className="mt-auto flex items-center justify-between">
                         <button
                           onClick={() => removeItem(item.productId, item.color, item.size)}
-                          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-accent"
+                          className="flex h-8 w-8 items-center justify-center rounded-full border border-white/30 transition-colors hover:bg-accent"
                           aria-label="Remove item"
                         >
                           <X className="h-4 w-4" />
                         </button>
-                        <div className="flex items-center gap-2 rounded-full border border-border px-3 py-1">
+                        <div className="flex items-center gap-2 rounded-full border border-white/30 px-3 py-1">
                           <button
                             onClick={() => updateQuantity(item.productId, item.color, item.size, item.quantity - 1)}
                             className="flex h-6 w-6 items-center justify-center transition-colors hover:text-muted-foreground"

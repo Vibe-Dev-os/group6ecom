@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, Search, Mail, Calendar, ShieldCheck, Loader2, Trash2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
@@ -28,6 +29,8 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [alertMessage, setAlertMessage] = useState<{type: 'success' | 'error', message: string} | null>(null)
 
   useEffect(() => {
     fetchUsers()
@@ -52,10 +55,6 @@ export default function UsersPage() {
   }
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) {
-      return
-    }
-
     try {
       const response = await fetch(`/api/admin/users?id=${userId}`, {
         method: "DELETE",
@@ -63,16 +62,17 @@ export default function UsersPage() {
 
       if (!response.ok) {
         const data = await response.json()
-        alert(data.error || "Failed to delete user")
+        setAlertMessage({type: 'error', message: data.error || 'Failed to delete user'})
         return
       }
 
       // Remove user from list
       setUsers(users.filter(u => u.id !== userId))
-      alert("User deleted successfully")
+      setUserToDelete(null)
+      setAlertMessage({type: 'success', message: 'User deleted successfully!'})
     } catch (err) {
       console.error("Error deleting user:", err)
-      alert("Failed to delete user")
+      setAlertMessage({type: 'error', message: 'Failed to delete user'})
     }
   }
 
@@ -105,8 +105,8 @@ export default function UsersPage() {
 
   const getRoleColor = (role: string) => {
     return role === "admin"
-      ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
-      : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+      ? "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/50 dark:text-purple-300 dark:border-purple-700 font-medium"
+      : "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-700 font-medium"
   }
 
   return (
@@ -123,11 +123,11 @@ export default function UsersPage() {
             placeholder="Search by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50"
           />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[150px] border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
           <SelectContent>
@@ -179,7 +179,7 @@ export default function UsersPage() {
                           <Eye className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-md">
+                      <DialogContent className="max-w-lg">
                         <DialogHeader>
                           <DialogTitle>User Details - {user.name}</DialogTitle>
                           <DialogDescription>
@@ -187,25 +187,25 @@ export default function UsersPage() {
                           </DialogDescription>
                         </DialogHeader>
                         {selectedUser && (
-                          <div className="space-y-4">
-                            <Card>
-                              <CardHeader className="pb-3">
-                                <CardTitle className="text-sm flex items-center gap-2">
-                                  <Mail className="h-4 w-4" />
+                          <div className="space-y-6">
+                            <Card className="border-white/20 bg-background/50">
+                              <CardHeader className="pb-4">
+                                <CardTitle className="text-base flex items-center gap-2 font-semibold">
+                                  <Mail className="h-5 w-5 text-blue-500" />
                                   Contact Information
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent className="space-y-2 text-sm">
-                                <div>
-                                  <p className="text-muted-foreground">Name</p>
-                                  <p className="font-medium">{selectedUser.name}</p>
+                              <CardContent className="space-y-4">
+                                <div className="flex justify-between items-center py-2 border-b border-white/10">
+                                  <span className="text-muted-foreground font-medium">Name</span>
+                                  <span className="font-semibold text-foreground">{selectedUser.name}</span>
                                 </div>
-                                <div>
-                                  <p className="text-muted-foreground">Email</p>
-                                  <p className="font-medium">{selectedUser.email}</p>
+                                <div className="flex justify-between items-center py-2 border-b border-white/10">
+                                  <span className="text-muted-foreground font-medium">Email</span>
+                                  <span className="font-semibold text-foreground">{selectedUser.email}</span>
                                 </div>
-                                <div>
-                                  <p className="text-muted-foreground">Role</p>
+                                <div className="flex justify-between items-center py-2">
+                                  <span className="text-muted-foreground font-medium">Role</span>
                                   <Badge className={getRoleColor(selectedUser.role)}>
                                     {selectedUser.role.toUpperCase()}
                                   </Badge>
@@ -213,21 +213,21 @@ export default function UsersPage() {
                               </CardContent>
                             </Card>
 
-                            <Card>
-                              <CardHeader className="pb-3">
-                                <CardTitle className="text-sm flex items-center gap-2">
-                                  <Calendar className="h-4 w-4" />
+                            <Card className="border-white/20 bg-background/50">
+                              <CardHeader className="pb-4">
+                                <CardTitle className="text-base flex items-center gap-2 font-semibold">
+                                  <Calendar className="h-5 w-5 text-green-500" />
                                   Account Activity
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent className="space-y-2 text-sm">
-                                <div>
-                                  <p className="text-muted-foreground">Joined</p>
-                                  <p className="font-medium">{new Date(selectedUser.createdAt).toLocaleString()}</p>
+                              <CardContent className="space-y-4">
+                                <div className="flex justify-between items-center py-2 border-b border-white/10">
+                                  <span className="text-muted-foreground font-medium">Joined</span>
+                                  <span className="font-semibold text-foreground">{new Date(selectedUser.createdAt).toLocaleString()}</span>
                                 </div>
-                                <div>
-                                  <p className="text-muted-foreground">Last Updated</p>
-                                  <p className="font-medium">{new Date(selectedUser.updatedAt).toLocaleString()}</p>
+                                <div className="flex justify-between items-center py-2">
+                                  <span className="text-muted-foreground font-medium">Last Updated</span>
+                                  <span className="font-semibold text-foreground">{new Date(selectedUser.updatedAt).toLocaleString()}</span>
                                 </div>
                               </CardContent>
                             </Card>
@@ -238,8 +238,8 @@ export default function UsersPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => setUserToDelete(user)}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50/50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -251,6 +251,49 @@ export default function UsersPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{userToDelete?.name}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => userToDelete && handleDeleteUser(userToDelete.id)}
+              className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success/Error Alert Dialog */}
+      <AlertDialog open={!!alertMessage} onOpenChange={() => setAlertMessage(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {alertMessage?.type === 'success' ? 'Success' : 'Error'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertMessage?.message}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setAlertMessage(null)}
+              className="bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-600"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

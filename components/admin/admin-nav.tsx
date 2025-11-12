@@ -2,9 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, ArrowLeft } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { signOut } from "next-auth/react"
+import { useState } from "react"
 
 const navItems = [
   {
@@ -36,31 +39,59 @@ const navItems = [
 
 export function AdminNav() {
   const pathname = usePathname()
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/" })
+  }
 
   return (
-    <nav className="flex flex-col gap-2 p-4">
-      <Button variant="ghost" className="justify-start mb-4" asChild>
-        <Link href="/">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Store
-        </Link>
-      </Button>
-      
+    <nav className="flex flex-col gap-3 p-6">
       {navItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+            "flex items-center gap-4 rounded-xl px-4 py-4 text-base font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-md",
             pathname === item.href
-              ? "bg-accent text-accent-foreground"
-              : "text-muted-foreground"
+              ? "bg-white text-gray-800 shadow-lg"
+              : "text-muted-foreground hover:bg-white hover:text-gray-800 border border-transparent"
           )}
         >
-          <item.icon className="h-4 w-4" />
+          <item.icon className="h-6 w-6" />
           {item.title}
         </Link>
       ))}
+      
+      {/* Logout Button */}
+      <button
+        onClick={() => setShowLogoutDialog(true)}
+        className="flex items-center gap-4 rounded-xl px-4 py-4 text-base font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-md text-muted-foreground hover:bg-white hover:text-gray-800 border border-transparent"
+      >
+        <LogOut className="h-6 w-6" />
+        Log Out
+      </button>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign Out</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to sign out? You will be redirected to the home page.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Sign Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </nav>
   )
 }

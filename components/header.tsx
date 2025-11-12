@@ -66,7 +66,7 @@ export function Header({ onCartClick }: { onCartClick: () => void }) {
 
           <button
             onClick={onCartClick}
-            className="relative flex h-10 w-10 items-center justify-center rounded-md border border-input transition-colors hover:bg-accent"
+            className="relative flex h-10 w-10 items-center justify-center rounded-md border border-input transition-colors hover:bg-blue-500/10 hover:border-blue-500"
             aria-label="Shopping cart"
           >
             <ShoppingCart className="h-5 w-5" />

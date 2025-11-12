@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, ArrowLeft } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useCart } from "@/lib/cart-context"
 import { formatPrice } from "@/lib/currency"
@@ -156,13 +156,6 @@ export default function CheckoutPage() {
       <div className="mx-auto grid max-w-[1920px] lg:grid-cols-2">
         {/* Left side - Form */}
         <div className="border-r border-border px-6 py-12 lg:px-12">
-          <Link href="/" className="mb-12 flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center bg-foreground text-background">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-            </div>
-          </Link>
 
           {/* Breadcrumb */}
           <div className="mb-8 flex items-center gap-2 text-sm">
@@ -196,35 +189,37 @@ export default function CheckoutPage() {
               <>
                 <div>
                   <h2 className="mb-4 text-xl font-bold">Contact</h2>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Email address"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
-                  />
-                  <input
-                    type="tel"
-                    name="phone"
-                    placeholder="Mobile number (e.g., 09171234567)"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    pattern="[0-9]{11}"
-                    className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
-                  />
-                  <label className="mt-3 flex items-center gap-2">
+                  <div className="space-y-4">
                     <input
-                      type="checkbox"
-                      name="newsletter"
-                      checked={formData.newsletter}
+                      type="email"
+                      name="email"
+                      placeholder="Email address"
+                      value={formData.email}
                       onChange={handleInputChange}
-                      className="h-4 w-4 rounded border-input"
+                      required
+                      className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                     />
-                    <span className="text-sm">Send me news and exclusive offers via SMS/Email</span>
-                  </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      placeholder="Mobile number (e.g., 09171234567)"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
+                      pattern="[0-9]{11}"
+                      className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
+                    />
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="newsletter"
+                        checked={formData.newsletter}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 rounded border border-white/30"
+                      />
+                      <span className="text-sm">Send me news and exclusive offers via SMS/Email</span>
+                    </label>
+                  </div>
                 </div>
 
                 <div>
@@ -235,7 +230,7 @@ export default function CheckoutPage() {
                         type="text"
                         value="Philippines"
                         disabled
-                        className="h-12 w-full rounded-md border border-input bg-muted px-4 text-sm outline-none cursor-not-allowed"
+                        className="h-12 w-full rounded-md border border-white/30 bg-muted px-4 text-sm outline-none cursor-not-allowed"
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                         🇵🇭 Shipping within Philippines only
@@ -249,7 +244,7 @@ export default function CheckoutPage() {
                         placeholder="First name (optional)"
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
+                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                       />
                       <input
                         type="text"
@@ -258,7 +253,7 @@ export default function CheckoutPage() {
                         value={formData.lastName}
                         onChange={handleInputChange}
                         required
-                        className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
+                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                       />
                     </div>
 
@@ -269,7 +264,7 @@ export default function CheckoutPage() {
                       value={formData.address}
                       onChange={handleInputChange}
                       required
-                      className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
+                      className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                     />
 
                     <input
@@ -279,7 +274,7 @@ export default function CheckoutPage() {
                       value={formData.barangay}
                       onChange={handleInputChange}
                       required
-                      className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
+                      className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                     />
 
                     <input
@@ -288,7 +283,7 @@ export default function CheckoutPage() {
                       placeholder="Unit/Floor No., Building Name (optional)"
                       value={formData.apartment}
                       onChange={handleInputChange}
-                      className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
+                      className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                     />
 
                     <div className="grid gap-4 sm:grid-cols-3">
@@ -299,14 +294,14 @@ export default function CheckoutPage() {
                         value={formData.city}
                         onChange={handleInputChange}
                         required
-                        className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
+                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                       />
                       <select
                         name="region"
                         value={formData.region}
                         onChange={handleInputChange}
                         required
-                        className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
+                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                       >
                         <option value="">Region</option>
                         <option value="NCR">NCR - Metro Manila</option>
@@ -336,7 +331,7 @@ export default function CheckoutPage() {
                         required
                         pattern="[0-9]{4}"
                         maxLength={4}
-                        className="h-12 w-full rounded-md border border-input bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600"
+                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                       />
                     </div>
                   </div>
@@ -347,7 +342,7 @@ export default function CheckoutPage() {
             {currentStep === "shipping" && (
               <div>
                 <h2 className="mb-4 text-xl font-bold">Shipping method</h2>
-                <div className="rounded-md border border-input p-4">
+                <div className="rounded-md border border-white/30 p-4">
                   <div className="flex items-center justify-between">
                     <span className="font-medium">Standard Shipping</span>
                     <span className="font-semibold">Free</span>
@@ -362,7 +357,7 @@ export default function CheckoutPage() {
                 <h2 className="mb-4 text-xl font-bold">Payment Method</h2>
                 <div className="space-y-3">
                   {/* Bank Transfer */}
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-input p-4 transition-colors hover:border-blue-600 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-600/5">
+                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-white/30 p-4 transition-colors hover:border-white has-[:checked]:border-white has-[:checked]:bg-white/5">
                     <input
                       type="radio"
                       name="paymentMethod"
@@ -380,7 +375,7 @@ export default function CheckoutPage() {
                   </label>
 
                   {/* Cash on Delivery */}
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-input p-4 transition-colors hover:border-blue-600 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-600/5">
+                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-white/30 p-4 transition-colors hover:border-white has-[:checked]:border-white has-[:checked]:bg-white/5">
                     <input
                       type="radio"
                       name="paymentMethod"
@@ -398,7 +393,7 @@ export default function CheckoutPage() {
                   </label>
 
                   {/* GCash */}
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-input p-4 transition-colors hover:border-blue-600 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-600/5">
+                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-white/30 p-4 transition-colors hover:border-white has-[:checked]:border-white has-[:checked]:bg-white/5">
                     <input
                       type="radio"
                       name="paymentMethod"
@@ -418,7 +413,7 @@ export default function CheckoutPage() {
 
                 {/* Payment Instructions based on selected method */}
                 {paymentMethod === "bank" && (
-                  <div className="mt-4 rounded-md border border-input bg-muted/30 p-4">
+                  <div className="mt-4 rounded-md border border-white/30 bg-muted/30 p-4">
                     <h3 className="mb-2 font-semibold">Bank Account Details:</h3>
                     <div className="space-y-1 text-sm">
                       <p><strong>Bank Name:</strong> BDO Unibank</p>
@@ -430,7 +425,7 @@ export default function CheckoutPage() {
                 )}
 
                 {paymentMethod === "gcash" && (
-                  <div className="mt-4 rounded-md border border-input bg-muted/30 p-4">
+                  <div className="mt-4 rounded-md border border-white/30 bg-muted/30 p-4">
                     <h3 className="mb-2 font-semibold">GCash Payment Details:</h3>
                     <div className="space-y-1 text-sm">
                       <p><strong>GCash Number:</strong> 0917-123-4567</p>
@@ -441,7 +436,7 @@ export default function CheckoutPage() {
                 )}
 
                 {paymentMethod === "cod" && (
-                  <div className="mt-4 rounded-md border border-input bg-muted/30 p-4">
+                  <div className="mt-4 rounded-md border border-white/30 bg-muted/30 p-4">
                     <p className="text-sm text-muted-foreground">
                       Please prepare the exact amount for faster transaction. Our delivery rider will collect the payment upon delivery.
                     </p>
@@ -451,7 +446,11 @@ export default function CheckoutPage() {
             )}
 
             <div className="flex items-center justify-between pt-4">
-              <Link href="/" className="text-sm text-blue-600 hover:underline">
+              <Link 
+                href="/" 
+                className="flex items-center gap-2 rounded-full border-2 border-white/30 px-6 py-3 text-sm font-medium text-foreground transition-all duration-200 hover:border-white hover:bg-white/5 hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
                 Return to cart
               </Link>
               <button
@@ -483,7 +482,7 @@ export default function CheckoutPage() {
           <div className="space-y-4">
             {items.map((item) => (
               <div key={`${item.productId}-${item.color}-${item.size}`} className="flex gap-4">
-                <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-border">
+                <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-white/30">
                   <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" quality={100} unoptimized />
                   <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-bold">
                     {item.quantity}
