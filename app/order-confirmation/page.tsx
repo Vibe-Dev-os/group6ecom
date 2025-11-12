@@ -228,7 +228,7 @@ export default function OrderConfirmationPage() {
 
         {/* Support */}
         <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>Need help? Contact us at <a href="mailto:orders@acmestore.com" className="text-blue-600 hover:underline">orders@acmestore.com</a></p>
+          <p>Need help? Contact us at <a href="mailto:orders@cadstore.com" className="text-blue-600 hover:underline">orders@cadstore.com</a></p>
           <p className="mt-1">Or call us at <a href="tel:+639171234567" className="text-blue-600 hover:underline">0917-123-4567</a></p>
         </div>
       </div>

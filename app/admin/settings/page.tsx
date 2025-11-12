@@ -43,7 +43,7 @@ export default function AdminSettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="store-name">Store Name</Label>
-                <Input id="store-name" defaultValue="ACME STORE" />
+                <Input id="store-name" defaultValue="CAD STORE" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="store-description">Store Description</Label>
@@ -56,7 +56,7 @@ export default function AdminSettingsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="store-email">Contact Email</Label>
-                  <Input id="store-email" type="email" defaultValue="support@acmestore.com" />
+                  <Input id="store-email" type="email" defaultValue="support@cadstore.com" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="store-phone">Contact Phone</Label>

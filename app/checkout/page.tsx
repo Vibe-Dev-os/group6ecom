@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronRight, ArrowLeft } from "lucide-react"
+import { ChevronRight, ArrowLeft, CreditCard, Banknote, Smartphone, Shield, CheckCircle2 } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useCart } from "@/lib/cart-context"
 import { formatPrice } from "@/lib/currency"
@@ -354,92 +354,225 @@ export default function CheckoutPage() {
 
             {currentStep === "payment" && (
               <div>
-                <h2 className="mb-4 text-xl font-bold">Payment Method</h2>
-                <div className="space-y-3">
+                <div className="mb-6">
+                  <h2 className="mb-2 text-2xl font-bold">Payment Method</h2>
+                  <p className="text-sm text-muted-foreground">Choose your preferred payment method</p>
+                </div>
+                
+                <div className="space-y-4">
                   {/* Bank Transfer */}
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-white/30 p-4 transition-colors hover:border-white has-[:checked]:border-white has-[:checked]:bg-white/5">
+                  <label className="group relative flex cursor-pointer items-start gap-4 rounded-xl border-2 border-white/20 bg-gradient-to-r from-white/5 to-transparent p-5 transition-all duration-300 hover:border-blue-400/50 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-transparent hover:shadow-lg has-[:checked]:border-blue-500 has-[:checked]:bg-gradient-to-r has-[:checked]:from-blue-500/20 has-[:checked]:to-blue-500/5 has-[:checked]:shadow-xl">
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="bank"
                       checked={paymentMethod === "bank"}
                       onChange={(e) => setPaymentMethod(e.target.value as "bank" | "cod" | "gcash")}
-                      className="mt-1 h-4 w-4 accent-blue-600"
+                      className="mt-1.5 h-5 w-5 accent-blue-600"
                     />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                      <CreditCard className="h-6 w-6 text-blue-600" />
+                    </div>
                     <div className="flex-1">
-                      <div className="font-semibold">Bank Transfer</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-semibold">Bank Transfer</span>
+                        <Shield className="h-4 w-4 text-green-500" />
+                      </div>
                       <p className="mt-1 text-sm text-muted-foreground">
                         Transfer funds directly to our bank account. Order will be processed after payment confirmation.
                       </p>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-green-600">
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span>Secure & Verified</span>
+                      </div>
                     </div>
+                    {paymentMethod === "bank" && (
+                      <div className="absolute right-4 top-4 rounded-full bg-blue-500 p-1">
+                        <CheckCircle2 className="h-4 w-4 text-white" />
+                      </div>
+                    )}
                   </label>
 
                   {/* Cash on Delivery */}
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-white/30 p-4 transition-colors hover:border-white has-[:checked]:border-white has-[:checked]:bg-white/5">
+                  <label className="group relative flex cursor-pointer items-start gap-4 rounded-xl border-2 border-white/20 bg-gradient-to-r from-white/5 to-transparent p-5 transition-all duration-300 hover:border-green-400/50 hover:bg-gradient-to-r hover:from-green-500/10 hover:to-transparent hover:shadow-lg has-[:checked]:border-green-500 has-[:checked]:bg-gradient-to-r has-[:checked]:from-green-500/20 has-[:checked]:to-green-500/5 has-[:checked]:shadow-xl">
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="cod"
                       checked={paymentMethod === "cod"}
                       onChange={(e) => setPaymentMethod(e.target.value as "bank" | "cod" | "gcash")}
-                      className="mt-1 h-4 w-4 accent-blue-600"
+                      className="mt-1.5 h-5 w-5 accent-green-600"
                     />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+                      <Banknote className="h-6 w-6 text-green-600" />
+                    </div>
                     <div className="flex-1">
-                      <div className="font-semibold">Cash on Delivery (COD)</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-semibold">Cash on Delivery (COD)</span>
+                        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/50 dark:text-green-300">
+                          Popular
+                        </span>
+                      </div>
                       <p className="mt-1 text-sm text-muted-foreground">
                         Pay with cash when your order is delivered to your doorstep.
                       </p>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-green-600">
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span>No upfront payment required</span>
+                      </div>
                     </div>
+                    {paymentMethod === "cod" && (
+                      <div className="absolute right-4 top-4 rounded-full bg-green-500 p-1">
+                        <CheckCircle2 className="h-4 w-4 text-white" />
+                      </div>
+                    )}
                   </label>
 
                   {/* GCash */}
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border-2 border-white/30 p-4 transition-colors hover:border-white has-[:checked]:border-white has-[:checked]:bg-white/5">
+                  <label className="group relative flex cursor-pointer items-start gap-4 rounded-xl border-2 border-white/20 bg-gradient-to-r from-white/5 to-transparent p-5 transition-all duration-300 hover:border-blue-400/50 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-transparent hover:shadow-lg has-[:checked]:border-blue-500 has-[:checked]:bg-gradient-to-r has-[:checked]:from-blue-500/20 has-[:checked]:to-blue-500/5 has-[:checked]:shadow-xl">
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="gcash"
                       checked={paymentMethod === "gcash"}
                       onChange={(e) => setPaymentMethod(e.target.value as "bank" | "cod" | "gcash")}
-                      className="mt-1 h-4 w-4 accent-blue-600"
+                      className="mt-1.5 h-5 w-5 accent-blue-600"
                     />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                      <Smartphone className="h-6 w-6 text-blue-600" />
+                    </div>
                     <div className="flex-1">
-                      <div className="font-semibold">GCash</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-semibold">GCash</span>
+                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                          Instant
+                        </span>
+                      </div>
                       <p className="mt-1 text-sm text-muted-foreground">
                         Pay instantly using your GCash mobile wallet. Fast and secure payment.
                       </p>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-blue-600">
+                        <CheckCircle2 className="h-3 w-3" />
+                        <span>Instant confirmation</span>
+                      </div>
                     </div>
+                    {paymentMethod === "gcash" && (
+                      <div className="absolute right-4 top-4 rounded-full bg-blue-500 p-1">
+                        <CheckCircle2 className="h-4 w-4 text-white" />
+                      </div>
+                    )}
                   </label>
                 </div>
 
-                {/* Payment Instructions based on selected method */}
+                {/* Enhanced Payment Instructions */}
                 {paymentMethod === "bank" && (
-                  <div className="mt-4 rounded-md border border-white/30 bg-muted/30 p-4">
-                    <h3 className="mb-2 font-semibold">Bank Account Details:</h3>
-                    <div className="space-y-1 text-sm">
-                      <p><strong>Bank Name:</strong> BDO Unibank</p>
-                      <p><strong>Account Name:</strong> ACME Gaming Store</p>
-                      <p><strong>Account Number:</strong> 1234-5678-9012</p>
-                      <p className="mt-2 text-muted-foreground">Please send proof of payment to orders@acmestore.com</p>
+                  <div className="mt-6 overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:border-blue-800 dark:from-blue-950/50 dark:to-blue-900/30">
+                    <div className="border-b border-blue-200 bg-blue-100/50 px-6 py-4 dark:border-blue-800 dark:bg-blue-900/50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500">
+                          <CreditCard className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-blue-900 dark:text-blue-100">Bank Account Details</h3>
+                          <p className="text-sm text-blue-700 dark:text-blue-300">Complete your payment using these details</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-lg bg-white/70 p-4 dark:bg-blue-950/50">
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Bank Name</p>
+                          <p className="text-lg font-bold text-blue-900 dark:text-blue-100">BDO Unibank</p>
+                        </div>
+                        <div className="rounded-lg bg-white/70 p-4 dark:bg-blue-950/50">
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Account Name</p>
+                          <p className="text-lg font-bold text-blue-900 dark:text-blue-100">CAD Gaming Store</p>
+                        </div>
+                        <div className="rounded-lg bg-white/70 p-4 dark:bg-blue-950/50 sm:col-span-2">
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Account Number</p>
+                          <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">1234-5678-9012</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 rounded-lg bg-blue-600 p-4 text-white">
+                        <div className="flex items-start gap-3">
+                          <Shield className="h-5 w-5 flex-shrink-0" />
+                          <div>
+                            <p className="font-semibold">Important Instructions:</p>
+                            <p className="mt-1 text-sm text-blue-100">
+                              Please send proof of payment to <span className="font-semibold">orders@cadstore.com</span> with your order number for faster processing.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
 
                 {paymentMethod === "gcash" && (
-                  <div className="mt-4 rounded-md border border-white/30 bg-muted/30 p-4">
-                    <h3 className="mb-2 font-semibold">GCash Payment Details:</h3>
-                    <div className="space-y-1 text-sm">
-                      <p><strong>GCash Number:</strong> 0917-123-4567</p>
-                      <p><strong>Account Name:</strong> ACME Gaming Store</p>
-                      <p className="mt-2 text-muted-foreground">Please send screenshot of payment confirmation after sending</p>
+                  <div className="mt-6 overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:border-blue-800 dark:from-blue-950/50 dark:to-blue-900/30">
+                    <div className="border-b border-blue-200 bg-blue-100/50 px-6 py-4 dark:border-blue-800 dark:bg-blue-900/50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500">
+                          <Smartphone className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-blue-900 dark:text-blue-100">GCash Payment Details</h3>
+                          <p className="text-sm text-blue-700 dark:text-blue-300">Send payment to this GCash number</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-lg bg-white/70 p-4 dark:bg-blue-950/50">
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">GCash Number</p>
+                          <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">0917-123-4567</p>
+                        </div>
+                        <div className="rounded-lg bg-white/70 p-4 dark:bg-blue-950/50">
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Account Name</p>
+                          <p className="text-lg font-bold text-blue-900 dark:text-blue-100">CAD Gaming Store</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 rounded-lg bg-blue-600 p-4 text-white">
+                        <div className="flex items-start gap-3">
+                          <Smartphone className="h-5 w-5 flex-shrink-0" />
+                          <div>
+                            <p className="font-semibold">Next Steps:</p>
+                            <p className="mt-1 text-sm text-blue-100">
+                              Send payment via GCash and screenshot the confirmation. Email the screenshot to <span className="font-semibold">orders@cadstore.com</span> with your order number.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
 
                 {paymentMethod === "cod" && (
-                  <div className="mt-4 rounded-md border border-white/30 bg-muted/30 p-4">
-                    <p className="text-sm text-muted-foreground">
-                      Please prepare the exact amount for faster transaction. Our delivery rider will collect the payment upon delivery.
-                    </p>
+                  <div className="mt-6 overflow-hidden rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-green-100/50 dark:border-green-800 dark:from-green-950/50 dark:to-green-900/30">
+                    <div className="border-b border-green-200 bg-green-100/50 px-6 py-4 dark:border-green-800 dark:bg-green-900/50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500">
+                          <Banknote className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-green-900 dark:text-green-100">Cash on Delivery</h3>
+                          <p className="text-sm text-green-700 dark:text-green-300">Payment instructions for delivery</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="rounded-lg bg-green-600 p-4 text-white">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+                          <div>
+                            <p className="font-semibold">Payment Instructions:</p>
+                            <p className="mt-1 text-sm text-green-100">
+                              Please prepare the exact amount for faster transaction. Our delivery rider will collect the payment upon delivery.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

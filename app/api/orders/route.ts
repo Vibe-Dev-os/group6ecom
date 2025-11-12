@@ -130,20 +130,20 @@ export async function POST(request: NextRequest) {
       responseData.paymentInstructions = {
         type: "bank_transfer",
         bankName: "BDO Unibank",
-        accountName: "ACME Gaming Store",
+        accountName: "CAD Gaming Store",
         accountNumber: "1234-5678-9012",
         amount: total,
         reference: order.orderNumber,
-        instructions: "Please send proof of payment to orders@acmestore.com with your order number.",
+        instructions: "Please send proof of payment to orders@cadstore.com with your order number.",
       }
     } else if (paymentMethod === "gcash") {
       responseData.paymentInstructions = {
         type: "gcash",
         gcashNumber: "0917-123-4567",
-        accountName: "ACME Gaming Store",
+        accountName: "CAD Gaming Store",
         amount: total,
         reference: order.orderNumber,
-        instructions: "Send payment via GCash and screenshot the confirmation. Send to orders@acmestore.com with your order number.",
+        instructions: "Send payment via GCash and screenshot the confirmation. Send to orders@cadstore.com with your order number.",
       }
     } else if (paymentMethod === "cod") {
       responseData.paymentInstructions = {
