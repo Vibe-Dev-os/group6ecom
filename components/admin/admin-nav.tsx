@@ -46,30 +46,30 @@ export function AdminNav() {
   }
 
   return (
-    <nav className="flex flex-col gap-3 p-6">
+    <nav className="flex flex-col gap-2 p-4 lg:gap-3 lg:p-6">
       {navItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}
           className={cn(
-            "flex items-center gap-4 rounded-xl px-4 py-4 text-base font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-md",
+            "flex items-center gap-3 lg:gap-4 rounded-xl px-3 py-3 lg:px-4 lg:py-4 text-sm lg:text-base font-medium transition-all duration-200 hover:shadow-md",
             pathname === item.href
               ? "bg-white text-gray-800 shadow-lg"
               : "text-muted-foreground hover:bg-white hover:text-gray-800 border border-transparent"
           )}
         >
-          <item.icon className="h-6 w-6" />
-          {item.title}
+          <item.icon className="h-5 w-5 lg:h-6 lg:w-6 flex-shrink-0" />
+          <span className="truncate">{item.title}</span>
         </Link>
       ))}
       
       {/* Logout Button */}
       <button
         onClick={() => setShowLogoutDialog(true)}
-        className="flex items-center gap-4 rounded-xl px-4 py-4 text-base font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-md text-muted-foreground hover:bg-white hover:text-gray-800 border border-transparent"
+        className="flex items-center gap-3 lg:gap-4 rounded-xl px-3 py-3 lg:px-4 lg:py-4 text-sm lg:text-base font-medium transition-all duration-200 hover:shadow-md text-muted-foreground hover:bg-white hover:text-gray-800 border border-transparent"
       >
-        <LogOut className="h-6 w-6" />
-        Log Out
+        <LogOut className="h-5 w-5 lg:h-6 lg:w-6 flex-shrink-0" />
+        <span className="truncate">Log Out</span>
       </button>
 
       {/* Logout Confirmation Dialog */}

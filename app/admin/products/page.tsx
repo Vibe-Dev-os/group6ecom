@@ -246,9 +246,9 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Products</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold">Products</h1>
           <p className="text-muted-foreground">Manage your product inventory</p>
         </div>
         <div className="flex-shrink-0">
@@ -435,12 +435,12 @@ export default function ProductsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <CardTitle>All Products</CardTitle>
               <CardDescription>View and manage all products in your store</CardDescription>
             </div>
-            <div className="relative w-64">
+            <div className="relative w-full lg:w-64">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search products..."
@@ -452,7 +452,8 @@ export default function ProductsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Product Name</TableHead>
@@ -492,21 +493,22 @@ export default function ProductsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1 lg:gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(product)}
+                        className="h-8 w-8 p-0 lg:h-9 lg:w-9"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3 w-3 lg:h-4 lg:w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setProductToDelete(product)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50/50"
+                        className="h-8 w-8 p-0 lg:h-9 lg:w-9 text-red-500 hover:text-red-600 hover:bg-red-50/50"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 lg:h-4 lg:w-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -515,6 +517,7 @@ export default function ProductsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
