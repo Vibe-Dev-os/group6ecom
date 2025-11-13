@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Home, Shield, User, Palette, Globe, Download, Trash2, Eye, EyeOff, ArrowLeft } from "lucide-react"
+import { Home, Shield, User, Download, Trash2, Eye, EyeOff, ArrowLeft } from "lucide-react"
 
 function SettingsContent() {
   const [message, setMessage] = useState("")
@@ -89,7 +89,7 @@ function SettingsContent() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 lg:w-fit lg:grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2 lg:w-fit lg:grid-cols-2">
               <TabsTrigger value="security" className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 Security
@@ -97,10 +97,6 @@ function SettingsContent() {
               <TabsTrigger value="privacy" className="flex items-center gap-2">
                 <Eye className="h-4 w-4" />
                 Privacy
-              </TabsTrigger>
-              <TabsTrigger value="preferences" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Preferences
               </TabsTrigger>
             </TabsList>
 
@@ -290,76 +286,6 @@ function SettingsContent() {
               </Card>
             </TabsContent>
 
-            {/* Preferences Tab */}
-            <TabsContent value="preferences" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="h-5 w-5" />
-                    Display Preferences
-                  </CardTitle>
-                  <CardDescription>
-                    Customize how the application looks and feels
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-base font-medium">Theme</Label>
-                      <p className="text-sm text-muted-foreground mb-3">Choose your preferred theme</p>
-                      <div className="grid grid-cols-3 gap-3">
-                        <Button className="h-auto p-4" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
-                          <div className="text-center">
-                            <div className="w-8 h-8 rounded-full bg-white border-2 border-gray-300 mx-auto mb-2"></div>
-                            <span className="text-sm">Light</span>
-                          </div>
-                        </Button>
-                        <Button className="h-auto p-4" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
-                          <div className="text-center">
-                            <div className="w-8 h-8 rounded-full bg-gray-800 mx-auto mb-2"></div>
-                            <span className="text-sm">Dark</span>
-                          </div>
-                        </Button>
-                        <Button className="h-auto p-4" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
-                          <div className="text-center">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-white to-gray-800 mx-auto mb-2"></div>
-                            <span className="text-sm">System</span>
-                          </div>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="h-5 w-5" />
-                    Language & Region
-                  </CardTitle>
-                  <CardDescription>
-                    Set your language and regional preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Language</Label>
-                      <Button className="w-full justify-start" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
-                        🇺🇸 English (US)
-                      </Button>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Currency</Label>
-                      <Button className="w-full justify-start" style={{ backgroundColor: '#ffffff', color: '#000000' }}>
-                        ₱ Philippine Peso (PHP)
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
           </Tabs>
 
           {/* Save Button */}
