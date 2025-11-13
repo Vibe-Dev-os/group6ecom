@@ -64,6 +64,9 @@ const initialProducts = [
 export default function ProductsPage() {
   const [products, setProducts] = useState<typeof initialProducts>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("newest")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<typeof initialProducts[0] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -83,8 +86,12 @@ export default function ProductsPage() {
         const data = await response.json()
         // Ensure data is an array before setting
         if (Array.isArray(data)) {
-          // Sort products consistently by name for stable ordering
-          const sortedProducts = data.sort((a, b) => a.name.localeCompare(b.name))
+          // Sort products by newest first (createdAt or updatedAt)
+          const sortedProducts = data.sort((a, b) => {
+            const dateA = new Date(a.createdAt || a.updatedAt || 0).getTime()
+            const dateB = new Date(b.createdAt || b.updatedAt || 0).getTime()
+            return dateB - dateA // Newest first
+          })
           setProducts(sortedProducts)
         } else {
           console.error("Products data is not an array:", data)
@@ -115,10 +122,46 @@ export default function ProductsPage() {
     },
   })
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Get unique categories for filter dropdown
+  const categories = Array.from(new Set(products.map(p => p.category)))
+
+  // Filter and sort products
+  const filteredProducts = products
+    .filter((product) => {
+      // Search filter
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      // Category filter
+      const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
+      
+      // Status filter
+      const matchesStatus = statusFilter === "all" || product.status === statusFilter
+      
+      return matchesSearch && matchesCategory && matchesStatus
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return new Date((b as any).createdAt || (b as any).updatedAt || 0).getTime() - new Date((a as any).createdAt || (a as any).updatedAt || 0).getTime()
+        case "oldest":
+          return new Date((a as any).createdAt || (a as any).updatedAt || 0).getTime() - new Date((b as any).createdAt || (b as any).updatedAt || 0).getTime()
+        case "name-asc":
+          return a.name.localeCompare(b.name)
+        case "name-desc":
+          return b.name.localeCompare(a.name)
+        case "price-asc":
+          return a.price - b.price
+        case "price-desc":
+          return b.price - a.price
+        case "stock-asc":
+          return a.stock - b.stock
+        case "stock-desc":
+          return b.stock - a.stock
+        default:
+          return 0
+      }
+    })
 
   const onSubmit = async (data: ProductFormData) => {
     setIsLoading(true)
@@ -385,8 +428,6 @@ export default function ProductsPage() {
                             <SelectItem value="laptops">Gaming Laptops</SelectItem>
                             <SelectItem value="mice">Gaming Mice</SelectItem>
                             <SelectItem value="chairs">Gaming Chairs</SelectItem>
-                            <SelectItem value="keyboards">Keyboards</SelectItem>
-                            <SelectItem value="monitors">Monitors</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -450,6 +491,86 @@ export default function ProductsPage() {
                 className="pl-10"
               />
             </div>
+          </div>
+          
+          {/* Filter Controls */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-4 pt-4 border-t">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              {/* Category Filter */}
+              <div className="flex items-center gap-2">
+                <Label htmlFor="category-filter" className="text-sm font-medium whitespace-nowrap">Category:</Label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status Filter */}
+              <div className="flex items-center gap-2">
+                <Label htmlFor="status-filter" className="text-sm font-medium whitespace-nowrap">Status:</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="All Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Sort Options */}
+            <div className="flex items-center gap-2">
+              <Label htmlFor="sort-by" className="text-sm font-medium whitespace-nowrap">Sort by:</Label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="name-asc">Name A-Z</SelectItem>
+                  <SelectItem value="name-desc">Name Z-A</SelectItem>
+                  <SelectItem value="price-asc">Price Low-High</SelectItem>
+                  <SelectItem value="price-desc">Price High-Low</SelectItem>
+                  <SelectItem value="stock-asc">Stock Low-High</SelectItem>
+                  <SelectItem value="stock-desc">Stock High-Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Results Summary */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <p className="text-sm text-muted-foreground">
+              Showing {filteredProducts.length} of {products.length} products
+            </p>
+            {(categoryFilter !== "all" || statusFilter !== "all" || searchQuery) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery("")
+                  setCategoryFilter("all")
+                  setStatusFilter("all")
+                  setSortBy("newest")
+                }}
+              >
+                Clear Filters
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
