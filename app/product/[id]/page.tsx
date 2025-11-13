@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { notFound, useRouter } from "next/navigation"
 import Image from "next/image"
-import { ChevronLeft, ChevronRight, Plus, Loader2 } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Loader2, ShoppingBag } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useCart } from "@/lib/cart-context"
 import { formatPrice } from "@/lib/currency"
@@ -15,6 +15,7 @@ import { InfiniteScrollProducts } from "@/components/infinite-scroll-products"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useToast } from "@/hooks/use-toast"
 import { LogIn } from "lucide-react"
 
 interface Product {
@@ -42,6 +43,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [showLoginAlert, setShowLoginAlert] = useState(false)
   const { addItem } = useCart()
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchProduct()
@@ -115,6 +117,46 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     })
     setIsCartOpen(true)
     setShowLoginAlert(false)
+  }
+
+  const handleBuyNow = () => {
+    // Check if user is authenticated
+    if (!session) {
+      setShowLoginAlert(true)
+      return
+    }
+
+    try {
+      // Add item to cart first
+      addItem({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[currentImageIndex] || product.images?.[0] || "/placeholder.svg",
+        color: selectedColor,
+        size: selectedSize,
+      })
+      
+      // Show success toast
+      toast({
+        title: "Proceeding to checkout!",
+        description: `${product.name} added to cart. Redirecting to checkout...`,
+        duration: 2000,
+      })
+      
+      // Redirect to checkout page after a short delay
+      setTimeout(() => {
+        router.push('/checkout')
+      }, 1000)
+    } catch (error) {
+      // Show error toast
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+        duration: 3000,
+      })
+    }
   }
 
   const handleLoginRedirect = () => {
@@ -279,20 +321,39 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </Alert>
             )}
 
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-blue-600 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={status === "loading" || (product.stock !== undefined && product.stock === 0)}
-            >
-              <Plus className="h-5 w-5" />
-              {product.stock === 0 
-                ? "Out of Stock" 
-                : session 
-                  ? "Add To Cart" 
-                  : "Login to Purchase"
-              }
-            </button>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
+              {/* Add to Cart Button */}
+              <button
+                onClick={handleAddToCart}
+                className="flex h-12 sm:h-14 w-full sm:flex-1 items-center justify-center gap-2 rounded-full bg-blue-600 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                disabled={status === "loading" || (product.stock !== undefined && product.stock === 0)}
+              >
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="truncate">
+                  {product.stock === 0 
+                    ? "Out of Stock" 
+                    : session 
+                      ? "Add To Cart" 
+                      : "Login to Purchase"
+                  }
+                </span>
+              </button>
+
+              {/* Buy Now Button */}
+              {product.stock !== 0 && (
+                <button
+                  onClick={handleBuyNow}
+                  className="flex h-12 sm:h-14 w-full sm:flex-1 items-center justify-center gap-2 rounded-full bg-white hover:bg-gray-100 text-black border border-gray-200 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                  disabled={status === "loading"}
+                >
+                  <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="truncate">
+                    {session ? "Buy Now" : "Login to Buy"}
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
