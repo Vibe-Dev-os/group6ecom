@@ -123,11 +123,11 @@ export function ProductCard({ product, featured = false, transparent = false }: 
             </Button>
           </div>
         </div>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4">
-          <span className="rounded-full bg-background px-4 py-2 text-sm font-semibold text-foreground whitespace-nowrap">
+        <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-2 sm:px-4 w-full max-w-[calc(100%-1rem)]">
+          <span className="rounded-full bg-background px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-foreground truncate max-w-full">
             {product.name}
           </span>
-          <span className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white whitespace-nowrap">{formattedPrice}</span>
+          <span className="rounded-full bg-blue-600 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white whitespace-nowrap">{formattedPrice}</span>
         </div>
       </Link>
     )
@@ -180,11 +180,11 @@ export function ProductCard({ product, featured = false, transparent = false }: 
           </Button>
         </div>
       </div>
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4">
-        <span className="rounded-full bg-background px-4 py-2 text-sm font-semibold text-foreground whitespace-nowrap">
+      <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-2 sm:px-4 w-full max-w-[calc(100%-1rem)]">
+        <span className="rounded-full bg-background px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-foreground truncate max-w-full">
           {product.name}
         </span>
-        <span className="rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white whitespace-nowrap">
+        <span className="rounded-full bg-blue-600 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white whitespace-nowrap">
           {formattedPrice}
         </span>
       </div>

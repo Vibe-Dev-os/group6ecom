@@ -241,9 +241,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
-              <div className="mt-3 flex items-center gap-3">
-                <div className="inline-block rounded-full bg-blue-600 px-4 py-2 text-lg font-semibold text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{product.name}</h1>
+              <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="inline-block rounded-full bg-blue-600 px-4 sm:px-5 py-2 sm:py-2.5 text-base sm:text-lg font-semibold text-white w-fit">
                   {formatPrice(product.price)}
                 </div>
                 {/* Stock Status Badge */}
@@ -255,49 +255,52 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </div>
             </div>
 
-            {/* Color Selection */}
-            {product.colors.length > 0 && (
-              <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">Color</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color.name}
-                      onClick={() => setSelectedColor(color.name)}
-                      className={`rounded-full border-2 px-6 py-2 text-sm font-medium transition-colors ${
-                        selectedColor === color.name
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border bg-background text-foreground hover:border-muted-foreground"
-                      }`}
-                    >
-                      {color.name}
-                    </button>
-                  ))}
+            {/* Color and Size Selection */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-6">
+              {/* Color Selection */}
+              {product.colors.length > 0 && (
+                <div>
+                  <h3 className="mb-3 text-sm sm:text-base font-semibold uppercase tracking-wide">Color</h3>
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {product.colors.map((color) => (
+                      <button
+                        key={color.name}
+                        onClick={() => setSelectedColor(color.name)}
+                        className={`rounded-full border-2 px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-colors min-w-[80px] sm:min-w-[100px] ${
+                          selectedColor === color.name
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border bg-background text-foreground hover:border-muted-foreground"
+                        }`}
+                      >
+                        {color.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Size Selection */}
-            {product.sizes.length > 0 && (
-              <div>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide">Size</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`rounded-full border-2 px-6 py-2 text-sm font-medium transition-colors ${
-                        selectedSize === size
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border bg-background text-foreground hover:border-muted-foreground"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
+              {/* Size Selection */}
+              {product.sizes.length > 0 && (
+                <div>
+                  <h3 className="mb-3 text-sm sm:text-base font-semibold uppercase tracking-wide">Size</h3>
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {product.sizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`rounded-full border-2 px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-colors min-w-[80px] sm:min-w-[100px] ${
+                          selectedSize === size
+                            ? "border-foreground bg-foreground text-background"
+                            : "border-border bg-background text-foreground hover:border-muted-foreground"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Description */}
             <p className="text-muted-foreground text-justify leading-relaxed">{product.description}</p>
