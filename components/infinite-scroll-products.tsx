@@ -67,14 +67,14 @@ export function InfiniteScrollProducts({ products }: InfiniteScrollProductsProps
       <div className="relative">
         <div
           ref={scrollContainerRef}
-          className="flex gap-4 overflow-x-auto pb-4 [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-muted/50 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-foreground/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-foreground/60"
+          className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:bg-muted/50 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-foreground/40 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-foreground/60"
           style={{
             scrollbarWidth: "thin",
             scrollbarColor: "hsl(var(--foreground) / 0.4) hsl(var(--muted) / 0.5)",
           }}
         >
           {duplicatedProducts.map((product, index) => (
-            <div key={`${product.id}-${index}`} className="w-80 flex-shrink-0">
+            <div key={`${product.id}-${index}`} className="w-64 sm:w-72 lg:w-80 flex-shrink-0">
               <ProductCard product={product} />
             </div>
           ))}

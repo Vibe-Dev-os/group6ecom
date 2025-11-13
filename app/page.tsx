@@ -62,23 +62,23 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="mx-auto max-w-[1920px] px-3 py-8 sm:px-4 lg:px-6">
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Featured product - takes up 2 columns on large screens */}
-          <div className="lg:col-span-2 lg:row-span-2">
+      <main className="mx-auto max-w-[1920px] px-3 py-4 sm:px-4 sm:py-6 lg:px-6 lg:py-8">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Featured product - takes up full width on mobile, 2 columns on large screens */}
+          <div className="col-span-1 sm:col-span-2 lg:col-span-2 lg:row-span-2">
             <ProductCard product={featuredProduct} featured />
           </div>
 
-          {/* Other products in a grid */}
+          {/* Other products in a responsive grid */}
           {otherProducts.slice(0, 2).map((product) => (
-            <div key={product.id}>
+            <div key={product.id} className="col-span-1">
               <ProductCard product={product} />
             </div>
           ))}
         </div>
 
-        <div className="mt-8">
-          <h2 className="mb-4 text-2xl font-bold text-foreground">Featured Products</h2>
+        <div className="mt-6 sm:mt-8">
+          <h2 className="mb-3 sm:mb-4 text-xl sm:text-2xl font-bold text-foreground">Featured Products</h2>
           <InfiniteScrollProducts products={filteredProducts} />
         </div>
       </main>

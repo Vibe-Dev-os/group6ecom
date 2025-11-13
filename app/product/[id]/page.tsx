@@ -258,7 +258,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             )}
 
             {/* Description */}
-            <p className="text-muted-foreground">{product.description}</p>
+            <p className="text-muted-foreground text-justify leading-relaxed">{product.description}</p>
 
             {/* Login Alert */}
             {showLoginAlert && (
