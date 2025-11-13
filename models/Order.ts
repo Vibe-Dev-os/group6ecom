@@ -12,6 +12,8 @@ export interface IOrder {
   shippingAddress: {
     address: string
     apartment?: string
+    barangay: string
+    municipality: string
     city: string
     region: string
     zipCode: string
@@ -54,6 +56,8 @@ const OrderSchema = new Schema<IOrder>(
     shippingAddress: {
       address: { type: String, required: true },
       apartment: String,
+      barangay: { type: String, required: true },
+      municipality: { type: String, required: true },
       city: { type: String, required: true },
       region: { type: String, required: true },
       zipCode: { type: String, required: true },

@@ -34,6 +34,8 @@ interface Order {
   }[]
   shippingAddress: {
     address: string
+    barangay: string
+    municipality: string
     city: string
     region: string
     zipCode: string
@@ -322,9 +324,15 @@ export default function OrdersPage() {
 
                             <div className="border border-white/30 rounded-lg p-4 bg-background/50">
                               <h4 className="font-medium mb-2">Shipping Address</h4>
-                              <p className="text-sm text-muted-foreground">
-                                {selectedOrder.shippingAddress.address}, {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.region} {selectedOrder.shippingAddress.zipCode}, {selectedOrder.shippingAddress.country}
-                              </p>
+                              <div className="text-sm text-muted-foreground space-y-1">
+                                <p><strong>Street:</strong> {selectedOrder.shippingAddress.address}</p>
+                                <p><strong>Barangay:</strong> {selectedOrder.shippingAddress.barangay}</p>
+                                <p><strong>Municipality:</strong> {selectedOrder.shippingAddress.municipality}</p>
+                                <p><strong>City/Province:</strong> {selectedOrder.shippingAddress.city}</p>
+                                <p><strong>Region:</strong> {selectedOrder.shippingAddress.region}</p>
+                                <p><strong>ZIP Code:</strong> {selectedOrder.shippingAddress.zipCode}</p>
+                                <p><strong>Country:</strong> {selectedOrder.shippingAddress.country}</p>
+                              </div>
                             </div>
                           </div>
                           </ScrollArea>

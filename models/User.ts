@@ -8,8 +8,10 @@ export interface IUser {
   phone?: string
   address?: {
     street?: string
+    barangay?: string
+    municipality?: string
     city?: string
-    state?: string
+    region?: string
     zipCode?: string
     country?: string
   }
@@ -55,8 +57,10 @@ const UserSchema = new Schema<IUser>(
     },
     address: {
       street: { type: String, trim: true },
+      barangay: { type: String, trim: true },
+      municipality: { type: String, trim: true },
       city: { type: String, trim: true },
-      state: { type: String, trim: true },
+      region: { type: String, trim: true },
       zipCode: { type: String, trim: true },
       country: { type: String, trim: true },
     },

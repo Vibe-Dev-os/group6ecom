@@ -10,6 +10,15 @@ import { ChevronRight, ArrowLeft, CreditCard, Banknote, Smartphone, Shield, Chec
 import { useSession } from "next-auth/react"
 import { useCart } from "@/lib/cart-context"
 import { formatPrice } from "@/lib/currency"
+import { 
+  getAllRegions, 
+  getCitiesByRegion, 
+  getMunicipalitiesByCity, 
+  getBarangaysByMunicipality,
+  type Region,
+  type City,
+  type Municipality
+} from "@/lib/ph-locations"
 
 type CheckoutStep = "information" | "shipping" | "payment"
 
@@ -18,6 +27,29 @@ export default function CheckoutPage() {
   const { data: session, status } = useSession()
   const { items, totalPrice } = useCart()
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("information")
+  const [formData, setFormData] = useState({
+    email: "",
+    phone: "",
+    firstName: "",
+    lastName: "",
+    address: "",
+    barangay: "",
+    apartment: "",
+    city: "",
+    municipality: "",
+    region: "",
+    zipCode: "",
+    country: "Philippines",
+    newsletter: false,
+  })
+
+  // Location dropdown states
+  const [availableRegions] = useState<Region[]>(getAllRegions())
+  const [availableCities, setAvailableCities] = useState<City[]>([])
+  const [availableMunicipalities, setAvailableMunicipalities] = useState<Municipality[]>([])
+  const [availableBarangays, setAvailableBarangays] = useState<string[]>([])
+  const [paymentMethod, setPaymentMethod] = useState<"bank" | "cod" | "gcash">("cod")
+  const [isProcessing, setIsProcessing] = useState(false)
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -31,21 +63,6 @@ export default function CheckoutPage() {
       router.push('/auth/signin')
     }
   }, [session, status, router])
-  const [formData, setFormData] = useState({
-    email: "",
-    phone: "",
-    firstName: "",
-    lastName: "",
-    address: "",
-    barangay: "",
-    apartment: "",
-    city: "",
-    region: "",
-    zipCode: "",
-    country: "Philippines",
-    newsletter: false,
-  })
-  const [paymentMethod, setPaymentMethod] = useState<"bank" | "cod" | "gcash">("cod")
 
   // Redirect if cart is empty
   if (items.length === 0) {
@@ -63,13 +80,45 @@ export default function CheckoutPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }))
+    
+    // Handle cascading dropdowns
+    if (name === "region") {
+      const cities = getCitiesByRegion(value)
+      setAvailableCities(cities)
+      setAvailableMunicipalities([])
+      setAvailableBarangays([])
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        city: "",
+        municipality: "",
+        barangay: "",
+      }))
+    } else if (name === "city") {
+      const municipalities = getMunicipalitiesByCity(value)
+      setAvailableMunicipalities(municipalities)
+      setAvailableBarangays([])
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        municipality: "",
+        barangay: "",
+      }))
+    } else if (name === "municipality") {
+      const barangays = getBarangaysByMunicipality(value)
+      setAvailableBarangays(barangays)
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        barangay: "",
+      }))
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      }))
+    }
   }
-
-  const [isProcessing, setIsProcessing] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,6 +143,7 @@ export default function CheckoutPage() {
             address: formData.address,
             barangay: formData.barangay,
             apartment: formData.apartment,
+            municipality: formData.municipality,
             city: formData.city,
             region: formData.region,
             zipCode: formData.zipCode,
@@ -270,16 +320,6 @@ export default function CheckoutPage() {
 
                     <input
                       type="text"
-                      name="barangay"
-                      placeholder="Barangay *"
-                      value={formData.barangay}
-                      onChange={handleInputChange}
-                      required
-                      className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
-                    />
-
-                    <input
-                      type="text"
                       name="apartment"
                       placeholder="Unit/Floor No., Building Name (optional)"
                       value={formData.apartment}
@@ -287,16 +327,9 @@ export default function CheckoutPage() {
                       className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                     />
 
-                    <div className="grid gap-4 sm:grid-cols-3">
-                      <input
-                        type="text"
-                        name="city"
-                        placeholder="City *"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        required
-                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
-                      />
+                    {/* Cascading Location Dropdowns */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {/* Region Dropdown */}
                       <select
                         name="region"
                         value={formData.region}
@@ -304,25 +337,70 @@ export default function CheckoutPage() {
                         required
                         className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                       >
-                        <option value="">Region</option>
-                        <option value="NCR">NCR - Metro Manila</option>
-                        <option value="CAR">CAR - Cordillera Administrative Region</option>
-                        <option value="I">Region I - Ilocos Region</option>
-                        <option value="II">Region II - Cagayan Valley</option>
-                        <option value="III">Region III - Central Luzon</option>
-                        <option value="IV-A">Region IV-A - CALABARZON</option>
-                        <option value="IV-B">Region IV-B - MIMAROPA</option>
-                        <option value="V">Region V - Bicol Region</option>
-                        <option value="VI">Region VI - Western Visayas</option>
-                        <option value="VII">Region VII - Central Visayas</option>
-                        <option value="VIII">Region VIII - Eastern Visayas</option>
-                        <option value="IX">Region IX - Zamboanga Peninsula</option>
-                        <option value="X">Region X - Northern Mindanao</option>
-                        <option value="XI">Region XI - Davao Region</option>
-                        <option value="XII">Region XII - SOCCSKSARGEN</option>
-                        <option value="XIII">Region XIII - Caraga</option>
-                        <option value="BARMM">BARMM - Bangsamoro</option>
+                        <option value="">Select Region *</option>
+                        {availableRegions.map((region) => (
+                          <option key={region.code} value={region.code}>
+                            {region.name}
+                          </option>
+                        ))}
                       </select>
+
+                      {/* City Dropdown */}
+                      <select
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        required
+                        disabled={!formData.region}
+                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="">Select City/Province *</option>
+                        {availableCities.map((city) => (
+                          <option key={city.code} value={city.code}>
+                            {city.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {/* Municipality Dropdown */}
+                      <select
+                        name="municipality"
+                        value={formData.municipality}
+                        onChange={handleInputChange}
+                        required
+                        disabled={!formData.city}
+                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="">Select Municipality *</option>
+                        {availableMunicipalities.map((municipality) => (
+                          <option key={municipality.code} value={municipality.code}>
+                            {municipality.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Barangay Dropdown */}
+                      <select
+                        name="barangay"
+                        value={formData.barangay}
+                        onChange={handleInputChange}
+                        required
+                        disabled={!formData.municipality}
+                        className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <option value="">Select Barangay *</option>
+                        {availableBarangays.map((barangay) => (
+                          <option key={barangay} value={barangay}>
+                            {barangay}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* ZIP Code */}
+                    <div className="grid gap-4 sm:grid-cols-2">
                       <input
                         type="text"
                         name="zipCode"
