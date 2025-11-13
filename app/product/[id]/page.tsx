@@ -7,11 +7,13 @@ import { ChevronLeft, ChevronRight, Plus, Loader2 } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { useCart } from "@/lib/cart-context"
 import { formatPrice } from "@/lib/currency"
+import { getStockStatus } from "@/lib/products"
 import { Header } from "@/components/header"
 import { CartSidebar } from "@/components/cart-sidebar"
 import { ProductCard } from "@/components/product-card"
 import { InfiniteScrollProducts } from "@/components/infinite-scroll-products"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LogIn } from "lucide-react"
 
@@ -24,6 +26,8 @@ interface Product {
   colors: { name: string; value: string }[]
   sizes: string[]
   category: string
+  stock?: number
+  status?: "active" | "inactive" | "out_of_stock"
 }
 
 export default function ProductPage({ params }: { params: { id: string } }) {
@@ -196,8 +200,16 @@ export default function ProductPage({ params }: { params: { id: string } }) {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
-              <div className="mt-3 inline-block rounded-full bg-blue-600 px-4 py-2 text-lg font-semibold text-white">
-                {formatPrice(product.price)}
+              <div className="mt-3 flex items-center gap-3">
+                <div className="inline-block rounded-full bg-blue-600 px-4 py-2 text-lg font-semibold text-white">
+                  {formatPrice(product.price)}
+                </div>
+                {/* Stock Status Badge */}
+                {product.stock !== undefined && (
+                  <Badge className={getStockStatus(product.stock).color}>
+                    {getStockStatus(product.stock).quantityLabel}
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -271,10 +283,15 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <button
               onClick={handleAddToCart}
               className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-blue-600 font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={status === "loading"}
+              disabled={status === "loading" || (product.stock !== undefined && product.stock === 0)}
             >
               <Plus className="h-5 w-5" />
-              {session ? "Add To Cart" : "Login to Purchase"}
+              {product.stock === 0 
+                ? "Out of Stock" 
+                : session 
+                  ? "Add To Cart" 
+                  : "Login to Purchase"
+              }
             </button>
           </div>
         </div>

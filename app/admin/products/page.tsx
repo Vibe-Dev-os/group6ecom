@@ -121,6 +121,14 @@ export default function ProductsPage() {
       if (editingProduct) {
         // Update existing product via API
         const imageUrls = data.images ? data.images.split(',').map(url => url.trim()).filter(url => url) : []
+        const stockQuantity = Number(data.stock)
+        
+        // Auto-determine status based on stock quantity if not manually set to out_of_stock
+        let finalStatus = data.status
+        if (data.status !== "out_of_stock") {
+          finalStatus = stockQuantity === 0 ? "out_of_stock" : "active"
+        }
+        
         const response = await fetch(`/api/products/${editingProduct.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -129,8 +137,8 @@ export default function ProductsPage() {
             description: data.description,
             price: Number(data.price),
             category: data.category,
-            stock: Number(data.stock),
-            status: data.status,
+            stock: stockQuantity,
+            status: finalStatus,
             images: imageUrls.length > 0 ? imageUrls : undefined,
           }),
         })
@@ -141,6 +149,14 @@ export default function ProductsPage() {
       } else {
         // Add new product via API
         const imageUrls = data.images ? data.images.split(',').map(url => url.trim()).filter(url => url) : []
+        const stockQuantity = Number(data.stock)
+        
+        // Auto-determine status based on stock quantity if not manually set to out_of_stock
+        let finalStatus = data.status
+        if (data.status !== "out_of_stock") {
+          finalStatus = stockQuantity === 0 ? "out_of_stock" : "active"
+        }
+        
         const response = await fetch("/api/products", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -149,8 +165,8 @@ export default function ProductsPage() {
             description: data.description,
             price: Number(data.price),
             category: data.category,
-            stock: Number(data.stock),
-            status: data.status,
+            stock: stockQuantity,
+            status: finalStatus,
             images: imageUrls.length > 0 ? imageUrls : undefined,
           }),
         })

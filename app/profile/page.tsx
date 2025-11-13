@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSession } from "next-auth/react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Home, User, Settings, Package, Camera, Mail, Phone, MapPin, Calendar, Shield, Edit3 } from "lucide-react"
+import { Home, User, Settings, Package, Camera, Mail, Phone, MapPin, Calendar, Shield, Edit3, CheckCircle, AlertCircle } from "lucide-react"
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -27,10 +27,12 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>
 
 function ProfileContent() {
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState("")
+  const [messageType, setMessageType] = useState<"success" | "error" | null>(null)
   const [activeTab, setActiveTab] = useState("overview")
+  const [userProfile, setUserProfile] = useState<any>(null)
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -40,9 +42,47 @@ function ProfileContent() {
     },
   })
 
+  // Load user profile data
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!session) return
+      
+      try {
+        const response = await fetch('/api/profile')
+        if (response.ok) {
+          const data = await response.json()
+          setUserProfile(data.user)
+          // Update form with latest data
+          form.reset({
+            name: data.user.name || "",
+            email: data.user.email || "",
+          })
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error)
+      }
+    }
+
+    loadProfile()
+  }, [session, form])
+
+  // Helper function to show messages
+  const showMessage = (msg: string, type: "success" | "error") => {
+    setMessage(msg)
+    setMessageType(type)
+    // Auto-hide success messages after 5 seconds
+    if (type === "success") {
+      setTimeout(() => {
+        setMessage("")
+        setMessageType(null)
+      }, 5000)
+    }
+  }
+
   const onSubmit = async (data: ProfileFormData) => {
     setIsLoading(true)
     setMessage("")
+    setMessageType(null)
 
     try {
       const response = await fetch("/api/profile", {
@@ -54,16 +94,16 @@ function ProfileContent() {
       const result = await response.json()
 
       if (!response.ok) {
-        setMessage(result.error || "Failed to update profile")
+        showMessage(result.error || "Failed to update profile", "error")
         return
       }
 
-      setMessage("✅ Profile updated successfully!")
+      showMessage("Profile updated successfully!", "success")
       
       // Refresh session to get updated data
       window.location.reload()
     } catch (error) {
-      setMessage("❌ An error occurred. Please try again.")
+      showMessage("An error occurred. Please try again.", "error")
     } finally {
       setIsLoading(false)
     }
@@ -114,12 +154,12 @@ function ProfileContent() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <Avatar className="h-24 w-24 border-4 border-primary/20">
-                    <AvatarImage src="" alt={session?.user.name} />
+                    <AvatarImage src={userProfile?.avatar || ""} alt={userProfile?.name || session?.user.name} />
                     <AvatarFallback 
                       className="text-2xl font-bold"
                       style={{ backgroundColor: '#f0f0f0', color: '#000000' }}
                     >
-                      {session?.user.name ? getInitials(session.user.name) : "U"}
+                      {(userProfile?.name || session?.user.name) ? getInitials(userProfile?.name || session?.user.name || "") : "U"}
                     </AvatarFallback>
                   </Avatar>
                   <Button
@@ -132,15 +172,15 @@ function ProfileContent() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold">{session?.user.name}</h2>
-                    <Badge variant={session?.user.role === 'admin' ? 'default' : 'secondary'} className="capitalize">
+                    <h2 className="text-2xl font-bold">{userProfile?.name || session?.user.name}</h2>
+                    <Badge variant={(userProfile?.role || session?.user.role) === 'admin' ? 'default' : 'secondary'} className="capitalize">
                       <Shield className="mr-1 h-3 w-3" />
-                      {session?.user.role}
+                      {userProfile?.role || session?.user.role}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground mb-3">
                     <Mail className="h-4 w-4" />
-                    <span>{session?.user.email}</span>
+                    <span>{userProfile?.email || session?.user.email}</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="h-4 w-4" />
@@ -337,9 +377,23 @@ function ProfileContent() {
                       />
                     </div>
                     
-                    {message && (
-                      <Alert className={message.includes('✅') ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
-                        <AlertDescription className={message.includes('✅') ? 'text-green-800' : 'text-red-800'}>
+                    {message && messageType && (
+                      <Alert 
+                        className={
+                          messageType === "success" 
+                            ? "border-green-200 bg-green-50 text-green-800" 
+                            : "border-red-200 bg-red-50 text-red-800"
+                        }
+                      >
+                        {messageType === "success" ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4" />
+                        )}
+                        <AlertTitle>
+                          {messageType === "success" ? "Success" : "Error"}
+                        </AlertTitle>
+                        <AlertDescription>
                           {message}
                         </AlertDescription>
                       </Alert>

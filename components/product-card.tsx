@@ -2,6 +2,8 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Product } from "@/lib/products"
 import { formatPrice } from "@/lib/currency"
+import { getStockStatus } from "@/lib/products"
+import { Badge } from "@/components/ui/badge"
 
 interface ProductCardProps {
   product: Product
@@ -11,6 +13,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, featured = false, transparent = false }: ProductCardProps) {
   const formattedPrice = formatPrice(product.price)
+  const stockStatus = getStockStatus(product.stock || 0)
 
   if (featured) {
     return (
@@ -28,6 +31,14 @@ export function ProductCard({ product, featured = false, transparent = false }: 
             priority
             unoptimized
           />
+          {/* Stock Status Badge */}
+          {product.stock !== undefined && (
+            <div className="absolute top-4 right-4">
+              <Badge className={stockStatus.color}>
+                {stockStatus.quantityLabel}
+              </Badge>
+            </div>
+          )}
         </div>
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4">
           <span className="rounded-full bg-background px-4 py-2 text-sm font-semibold text-foreground whitespace-nowrap">
@@ -55,6 +66,14 @@ export function ProductCard({ product, featured = false, transparent = false }: 
           quality={100}
           unoptimized
         />
+        {/* Stock Status Badge */}
+        {product.stock !== undefined && (
+          <div className="absolute top-4 right-4">
+            <Badge className={stockStatus.color}>
+              {stockStatus.quantityLabel}
+            </Badge>
+          </div>
+        )}
       </div>
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4">
         <span className="rounded-full bg-background px-4 py-2 text-sm font-semibold text-foreground whitespace-nowrap">

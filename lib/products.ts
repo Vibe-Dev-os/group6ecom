@@ -10,6 +10,8 @@ export interface Product {
   }[]
   sizes: string[]
   category: string
+  stock?: number
+  status?: "active" | "inactive" | "out_of_stock"
 }
 
 export const products: Product[] = [
@@ -29,6 +31,8 @@ export const products: Product[] = [
     ],
     sizes: ["RTX 4060", "RTX 4070", "RTX 4090"],
     category: "laptops",
+    stock: 5,
+    status: "active",
   },
   {
     id: "rog-strix-gaming-laptop",
@@ -42,6 +46,8 @@ export const products: Product[] = [
     ],
     sizes: ["RTX 4070", "RTX 4080", "RTX 4090"],
     category: "laptops",
+    stock: 15,
+    status: "active",
   },
   {
     id: "legion-pro-gaming-laptop",
@@ -69,6 +75,8 @@ export const products: Product[] = [
     ],
     sizes: ["Wireless", "Wired"],
     category: "mice",
+    stock: 0,
+    status: "out_of_stock",
   },
   {
     id: "logitech-g502-gaming-mouse",
@@ -110,6 +118,8 @@ export const products: Product[] = [
     ],
     sizes: ["Small", "Regular", "XL"],
     category: "chairs",
+    stock: 2,
+    status: "active",
   },
   {
     id: "dxracer-master-gaming-chair",
@@ -263,4 +273,33 @@ export function getProductById(id: string): Product | undefined {
 
 export function getRelatedProducts(productId: string, limit = 5): Product[] {
   return products.filter((p) => p.id !== productId).slice(0, limit)
+}
+
+// Utility function to get stock status based on stock quantity
+export function getStockStatus(stock: number = 0) {
+  if (stock === 0) {
+    return { 
+      label: "Out of Stock", 
+      quantityLabel: "Out of Stock",
+      color: "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-700",
+      variant: "destructive" as const,
+      showQuantity: false
+    }
+  }
+  if (stock < 10) {
+    return { 
+      label: "Low Stock", 
+      quantityLabel: `Only ${stock} left`,
+      color: "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-300 dark:border-yellow-700",
+      variant: "secondary" as const,
+      showQuantity: true
+    }
+  }
+  return { 
+    label: "In Stock", 
+    quantityLabel: `${stock} in stock`,
+    color: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/50 dark:text-green-300 dark:border-green-700",
+    variant: "default" as const,
+    showQuantity: true
+  }
 }

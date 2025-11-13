@@ -7,53 +7,248 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { useState } from "react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState, useEffect } from "react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Home, Shield, User, Download, Trash2, Eye, EyeOff, ArrowLeft } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useSession } from "next-auth/react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Home, Shield, User, Download, Trash2, Eye, EyeOff, ArrowLeft, Phone, MapPin, Bell, Palette, Globe, CheckCircle, AlertCircle } from "lucide-react"
+
+// Form schemas
+const profileSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional(),
+  address: z.object({
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    zipCode: z.string().optional(),
+    country: z.string().optional(),
+  }).optional(),
+})
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+})
+
+type ProfileFormData = z.infer<typeof profileSchema>
+type PasswordFormData = z.infer<typeof passwordSchema>
+
+interface UserPreferences {
+  emailNotifications: boolean
+  marketingEmails: boolean
+  orderUpdates: boolean
+  theme: "light" | "dark" | "system"
+  language: string
+}
 
 function SettingsContent() {
+  const { data: session, update: updateSession } = useSession()
   const [message, setMessage] = useState("")
-  const [activeTab, setActiveTab] = useState("security")
+  const [messageType, setMessageType] = useState<"success" | "error" | null>(null)
+  const [activeTab, setActiveTab] = useState("profile")
   const [showPassword, setShowPassword] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    emailNotifications: true,
+    marketingEmails: false,
+    orderUpdates: true,
+    theme: "system",
+    language: "en"
+  })
 
-  const handleSaveSettings = async () => {
-    setMessage("")
-    
-    try {
-      // In a real app, you would call your settings API here
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-      setMessage("✅ Settings saved successfully!")
-    } catch (error) {
-      setMessage("❌ An error occurred. Please try again.")
+  // Form instances
+  const profileForm = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: session?.user.name || "",
+      email: session?.user.email || "",
+      phone: "",
+      address: {
+        street: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "",
+      },
+    },
+  })
+
+  const passwordForm = useForm<PasswordFormData>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  })
+
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        // Load full profile
+        const profileResponse = await fetch('/api/profile')
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json()
+          const user = profileData.user
+          
+          // Update form with user data
+          profileForm.reset({
+            name: user.name || "",
+            email: user.email || "",
+            phone: user.phone || "",
+            address: user.address || {
+              street: "",
+              city: "",
+              state: "",
+              zipCode: "",
+              country: "",
+            },
+          })
+          
+          // Update preferences
+          if (user.preferences) {
+            setPreferences(user.preferences)
+          }
+        }
+        
+        // Load preferences separately as fallback
+        const preferencesResponse = await fetch('/api/settings/preferences')
+        if (preferencesResponse.ok) {
+          const preferencesData = await preferencesResponse.json()
+          setPreferences(preferencesData.preferences)
+        }
+      } catch (error) {
+        console.error('Failed to load user data:', error)
+      }
+    }
+
+    if (session) {
+      loadUserData()
+    }
+  }, [session, profileForm])
+
+  // Helper function to show messages
+  const showMessage = (msg: string, type: "success" | "error") => {
+    setMessage(msg)
+    setMessageType(type)
+    // Auto-hide success messages after 5 seconds
+    if (type === "success") {
+      setTimeout(() => {
+        setMessage("")
+        setMessageType(null)
+      }, 5000)
     }
   }
 
-  const handlePasswordChange = async () => {
-    if (newPassword !== confirmPassword) {
-      setMessage("❌ Passwords do not match")
-      return
-    }
-    
-    if (newPassword.length < 8) {
-      setMessage("❌ Password must be at least 8 characters long")
-      return
-    }
+  // Profile update handler
+  const onProfileSubmit = async (data: ProfileFormData) => {
+    setIsLoading(true)
+    setMessage("")
+    setMessageType(null)
 
     try {
-      // In a real app, you would call your password change API here
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setMessage("✅ Password changed successfully!")
-      setCurrentPassword("")
-      setNewPassword("")
-      setConfirmPassword("")
+      const response = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        showMessage(result.error || "Failed to update profile", "error")
+        return
+      }
+
+      showMessage("Profile updated successfully!", "success")
+      // Update session with new data
+      await updateSession({
+        ...session,
+        user: {
+          ...session?.user,
+          name: data.name,
+          email: data.email,
+        }
+      })
     } catch (error) {
-      setMessage("❌ Failed to change password. Please try again.")
+      showMessage("An error occurred. Please try again.", "error")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Password change handler
+  const onPasswordSubmit = async (data: PasswordFormData) => {
+    setIsLoading(true)
+    setMessage("")
+    setMessageType(null)
+
+    try {
+      const response = await fetch("/api/settings/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        showMessage(result.error || "Failed to change password", "error")
+        return
+      }
+
+      showMessage("Password changed successfully!", "success")
+      passwordForm.reset()
+    } catch (error) {
+      showMessage("An error occurred. Please try again.", "error")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Preferences update handler
+  const updatePreferences = async (newPreferences: Partial<UserPreferences>) => {
+    const updatedPreferences = { ...preferences, ...newPreferences }
+    
+    // Optimistic update
+    setPreferences(updatedPreferences)
+
+    try {
+      const response = await fetch("/api/settings/preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preferences: updatedPreferences }),
+      })
+
+      if (!response.ok) {
+        // Revert on error
+        setPreferences(preferences)
+        showMessage("Failed to update preferences", "error")
+      } else {
+        showMessage("Preferences updated successfully!", "success")
+      }
+    } catch (error) {
+      // Revert on error
+      setPreferences(preferences)
+      showMessage("An error occurred. Please try again.", "error")
     }
   }
 
@@ -89,10 +284,18 @@ function SettingsContent() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:w-fit lg:grid-cols-2">
+            <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
+              <TabsTrigger value="profile" className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Profile
+              </TabsTrigger>
               <TabsTrigger value="security" className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
                 Security
+              </TabsTrigger>
+              <TabsTrigger value="preferences" className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                Preferences
               </TabsTrigger>
               <TabsTrigger value="privacy" className="flex items-center gap-2">
                 <Eye className="h-4 w-4" />
@@ -100,6 +303,168 @@ function SettingsContent() {
               </TabsTrigger>
             </TabsList>
 
+
+            {/* Profile Tab */}
+            <TabsContent value="profile" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Personal Information
+                  </CardTitle>
+                  <CardDescription>
+                    Update your personal details and contact information
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...profileForm}>
+                    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
+                      <div className="grid gap-6 md:grid-cols-2">
+                        <FormField
+                          control={profileForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Full Name
+                              </FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter your full name" {...field} className="h-11" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={profileForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Email Address
+                              </FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="Enter your email" {...field} className="h-11" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={profileForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-2">
+                                <Phone className="h-4 w-4" />
+                                Phone Number
+                              </FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter your phone number" {...field} className="h-11" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <Separator />
+                      
+                      <div className="space-y-4">
+                        <h4 className="font-medium">Address Information</h4>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <FormField
+                            control={profileForm.control}
+                            name="address.street"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Street Address</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Enter street address" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={profileForm.control}
+                            name="address.city"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>City</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Enter city" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={profileForm.control}
+                            name="address.state"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>State/Province</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Enter state or province" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={profileForm.control}
+                            name="address.zipCode"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>ZIP/Postal Code</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Enter ZIP or postal code" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={profileForm.control}
+                          name="address.country"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Country</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter country" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="flex gap-3">
+                        <Button 
+                          type="submit" 
+                          disabled={isLoading} 
+                          className="min-w-[120px]"
+                          style={{ backgroundColor: '#ffffff', color: '#000000', border: '2px solid #666666' }}
+                        >
+                          {isLoading ? "Updating..." : "Save Changes"}
+                        </Button>
+                        <Button 
+                          type="button" 
+                          onClick={() => profileForm.reset()}
+                          style={{ backgroundColor: '#ffffff', color: '#000000', border: '2px solid #666666' }}
+                        >
+                          Reset
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Security Tab */}
             <TabsContent value="security" className="space-y-6">
@@ -113,59 +478,86 @@ function SettingsContent() {
                     Manage your password and authentication settings
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="current-password" className="text-foreground font-medium">Current Password</Label>
-                      <div className="relative">
-                        <Input
-                          id="current-password"
-                          type={showPassword ? "text" : "password"}
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="Enter your current password"
-                          className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-muted text-muted-foreground hover:text-foreground"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="new-password" className="text-foreground font-medium">New Password</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter your new password"
-                        className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
+                <CardContent>
+                  <Form {...passwordForm}>
+                    <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
+                      <FormField
+                        control={passwordForm.control}
+                        name="currentPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground font-medium">Current Password</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="Enter your current password"
+                                  {...field}
+                                  className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-muted text-muted-foreground hover:text-foreground"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password" className="text-foreground font-medium">Confirm New Password</Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm your new password"
-                        className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
+                      
+                      <FormField
+                        control={passwordForm.control}
+                        name="newPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground font-medium">New Password</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="password"
+                                placeholder="Enter your new password"
+                                {...field}
+                                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </div>
-                    
-                    <Button onClick={handlePasswordChange} className="w-full bg-white text-black border border-gray-300 hover:bg-gray-50 hover:text-black">
-                      Change Password
-                    </Button>
-                  </div>
+                      
+                      <FormField
+                        control={passwordForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-foreground font-medium">Confirm New Password</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="password"
+                                placeholder="Confirm your new password"
+                                {...field}
+                                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button 
+                        type="submit" 
+                        disabled={isLoading}
+                        className="w-full bg-white text-black border border-gray-300 hover:bg-gray-50 hover:text-black"
+                      >
+                        {isLoading ? "Changing Password..." : "Change Password"}
+                      </Button>
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
 
@@ -206,6 +598,128 @@ function SettingsContent() {
                   <Button className="w-full bg-white text-black border-2 border-gray-400 hover:bg-gray-100 hover:text-black shadow-md">
                     Set Up Two-Factor Authentication
                   </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Preferences Tab */}
+            <TabsContent value="preferences" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5" />
+                    Notification Preferences
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your notification and communication preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Bell className="h-5 w-5 text-blue-600" />
+                        <div>
+                          <h4 className="font-medium">Email Notifications</h4>
+                          <p className="text-sm text-muted-foreground">Receive important account notifications</p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={preferences.emailNotifications}
+                        onCheckedChange={(checked) => updatePreferences({ emailNotifications: checked })}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Bell className="h-5 w-5 text-green-600" />
+                        <div>
+                          <h4 className="font-medium">Order Updates</h4>
+                          <p className="text-sm text-muted-foreground">Get notified about order status changes</p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={preferences.orderUpdates}
+                        onCheckedChange={(checked) => updatePreferences({ orderUpdates: checked })}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Bell className="h-5 w-5 text-purple-600" />
+                        <div>
+                          <h4 className="font-medium">Marketing Emails</h4>
+                          <p className="text-sm text-muted-foreground">Receive promotional offers and updates</p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={preferences.marketingEmails}
+                        onCheckedChange={(checked) => updatePreferences({ marketingEmails: checked })}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Palette className="h-5 w-5" />
+                    Appearance & Language
+                  </CardTitle>
+                  <CardDescription>
+                    Customize your interface preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Palette className="h-5 w-5 text-indigo-600" />
+                        <div>
+                          <h4 className="font-medium">Theme</h4>
+                          <p className="text-sm text-muted-foreground">Choose your preferred color scheme</p>
+                        </div>
+                      </div>
+                      <Select
+                        value={preferences.theme}
+                        onValueChange={(value: "light" | "dark" | "system") => updatePreferences({ theme: value })}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="light">Light</SelectItem>
+                          <SelectItem value="dark">Dark</SelectItem>
+                          <SelectItem value="system">System</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Globe className="h-5 w-5 text-orange-600" />
+                        <div>
+                          <h4 className="font-medium">Language</h4>
+                          <p className="text-sm text-muted-foreground">Select your preferred language</p>
+                        </div>
+                      </div>
+                      <Select
+                        value={preferences.language}
+                        onValueChange={(value) => updatePreferences({ language: value })}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="es">Español</SelectItem>
+                          <SelectItem value="fr">Français</SelectItem>
+                          <SelectItem value="de">Deutsch</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -288,29 +802,28 @@ function SettingsContent() {
 
           </Tabs>
 
-          {/* Save Button */}
-          {message && (
-            <Alert className={message.includes('✅') ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
-              <AlertDescription className={message.includes('✅') ? 'text-green-800' : 'text-red-800'}>
+          {/* Global Message Display */}
+          {message && messageType && (
+            <Alert 
+              className={
+                messageType === "success" 
+                  ? "border-green-200 bg-green-50 text-green-800" 
+                  : "border-red-200 bg-red-50 text-red-800"
+              }
+            >
+              {messageType === "success" ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : (
+                <AlertCircle className="h-4 w-4" />
+              )}
+              <AlertTitle>
+                {messageType === "success" ? "Success" : "Error"}
+              </AlertTitle>
+              <AlertDescription>
                 {message}
               </AlertDescription>
             </Alert>
           )}
-
-          <div className="flex justify-end gap-3">
-            <Button 
-              onClick={() => window.location.reload()} 
-              style={{ backgroundColor: '#ffffff', color: '#000000', border: '2px solid #666666' }}
-            >
-              Reset Changes
-            </Button>
-            <Button 
-              onClick={handleSaveSettings} 
-              style={{ backgroundColor: '#ffffff', color: '#000000', border: '2px solid #666666' }}
-            >
-              Save All Settings
-            </Button>
-          </div>
         </div>
       </div>
     </div>

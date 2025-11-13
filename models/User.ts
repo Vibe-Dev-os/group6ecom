@@ -5,6 +5,24 @@ export interface IUser {
   password: string
   name: string
   role: "user" | "admin"
+  phone?: string
+  address?: {
+    street?: string
+    city?: string
+    state?: string
+    zipCode?: string
+    country?: string
+  }
+  avatar?: string
+  preferences?: {
+    emailNotifications: boolean
+    marketingEmails: boolean
+    orderUpdates: boolean
+    theme: "light" | "dark" | "system"
+    language: string
+  }
+  lastLogin?: Date
+  isActive: boolean
   createdAt?: Date
   updatedAt?: Date
 }
@@ -30,6 +48,39 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    address: {
+      street: { type: String, trim: true },
+      city: { type: String, trim: true },
+      state: { type: String, trim: true },
+      zipCode: { type: String, trim: true },
+      country: { type: String, trim: true },
+    },
+    avatar: {
+      type: String,
+      trim: true,
+    },
+    preferences: {
+      emailNotifications: { type: Boolean, default: true },
+      marketingEmails: { type: Boolean, default: false },
+      orderUpdates: { type: Boolean, default: true },
+      theme: { 
+        type: String, 
+        enum: ["light", "dark", "system"], 
+        default: "system" 
+      },
+      language: { type: String, default: "en" },
+    },
+    lastLogin: {
+      type: Date,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   {

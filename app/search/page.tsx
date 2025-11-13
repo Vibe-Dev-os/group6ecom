@@ -15,7 +15,8 @@ interface Product {
   description: string
   images: string[]
   category: string
-  stock: number
+  stock?: number
+  status?: "active" | "inactive" | "out_of_stock"
   colors: { name: string; value: string }[]
   sizes: string[]
 }

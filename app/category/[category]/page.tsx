@@ -16,6 +16,8 @@ interface Product {
   colors: { name: string; value: string }[]
   sizes: string[]
   category: string
+  stock?: number
+  status?: "active" | "inactive" | "out_of_stock"
 }
 
 export default function CategoryPage({ params }: { params: { category: string } }) {
