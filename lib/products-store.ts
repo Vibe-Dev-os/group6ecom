@@ -5,7 +5,7 @@ import Product from "@/models/Product"
 // Get all products
 export async function getAllProducts() {
   await connectDB()
-  const products = await Product.find({}).sort({ createdAt: -1 }).lean()
+  const products = await Product.find({}).sort({ name: 1 }).lean()
   return products.map(p => ({
     ...p,
     _id: p._id.toString(),

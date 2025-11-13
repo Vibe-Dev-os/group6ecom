@@ -61,11 +61,11 @@ const initialProducts = [
 ]
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState<typeof initialProducts>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<typeof initialProducts[0] | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [productToDelete, setProductToDelete] = useState<typeof initialProducts[0] | null>(null)
   const [alertMessage, setAlertMessage] = useState<{type: 'success' | 'error', message: string} | null>(null)
 
@@ -76,23 +76,28 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
+      setIsLoading(true)
       const response = await fetch("/api/products")
       if (response.ok) {
         const data = await response.json()
         // Ensure data is an array before setting
         if (Array.isArray(data)) {
-          setProducts(data)
+          // Sort products consistently by name for stable ordering
+          const sortedProducts = data.sort((a, b) => a.name.localeCompare(b.name))
+          setProducts(sortedProducts)
         } else {
           console.error("Products data is not an array:", data)
           setProducts([])
         }
       } else {
-        console.error("Failed to fetch products, status:", response.status)
+        console.error("Failed to fetch products")
         setProducts([])
       }
     } catch (error) {
-      console.error("Failed to fetch products:", error)
+      console.error("Error fetching products:", error)
       setProducts([])
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -459,7 +464,23 @@ export default function ProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts.map((product) => (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <span className="ml-2">Loading products...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : filteredProducts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    No products found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredProducts.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell className="capitalize">{product.category}</TableCell>
@@ -490,7 +511,8 @@ export default function ProductsPage() {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
