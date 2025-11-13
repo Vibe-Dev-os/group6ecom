@@ -14,8 +14,8 @@ export default function AdminLayout({
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside className="w-80 border-r bg-background shadow-lg">
-          <div className="flex h-20 items-center border-b px-8 bg-gradient-to-r from-blue-600 to-purple-600">
-            <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+          <div className="flex h-20 items-center border-b px-8 bg-background">
+            <h2 className="text-xl font-bold text-foreground">Admin Panel</h2>
           </div>
           <div className="h-[calc(100vh-5rem)] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <AdminNav />
