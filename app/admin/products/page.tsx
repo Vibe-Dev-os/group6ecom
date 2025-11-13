@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { processImageUrls, formatImageUrlsForForm, getPreviewUrl } from "@/lib/image-utils"
 
 const productSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -124,8 +125,8 @@ export default function ProductsPage() {
     
     try {
       if (editingProduct) {
-        // Update existing product via API
-        const imageUrls = data.images ? data.images.split(',').map(url => url.trim()).filter(url => url) : []
+        // Update existing product via API - process Google Images URLs and other complex URLs
+        const imageUrls = data.images ? processImageUrls(data.images) : []
         const stockQuantity = Number(data.stock)
         
         // Auto-determine status based on stock quantity if not manually set to out_of_stock
@@ -152,8 +153,8 @@ export default function ProductsPage() {
           await fetchProducts() // Refresh products from server
         }
       } else {
-        // Add new product via API
-        const imageUrls = data.images ? data.images.split(',').map(url => url.trim()).filter(url => url) : []
+        // Add new product via API - process Google Images URLs and other complex URLs
+        const imageUrls = data.images ? processImageUrls(data.images) : []
         const stockQuantity = Number(data.stock)
         
         // Auto-determine status based on stock quantity if not manually set to out_of_stock
@@ -318,13 +319,13 @@ export default function ProductsPage() {
                       </FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Enter image URLs separated by commas&#10;Example:&#10;https://example.com/image1.jpg, https://example.com/image2.jpg"
-                          className="min-h-[80px] border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50"
+                          placeholder="Enter image URLs separated by commas&#10;Supports Google Images links, Unsplash, direct URLs, etc.&#10;Example:&#10;https://images.unsplash.com/photo-123456, https://www.google.com/imgres?imgurl=..."
+                          className="min-h-[100px] border-white/30 bg-background text-foreground focus:border-white focus-visible:ring-white/50"
                           {...field} 
                         />
                       </FormControl>
                       <p className="text-xs text-muted-foreground">
-                        Separate multiple image URLs with commas
+                        ✅ Supports Google Images links, Unsplash, Pexels, and direct image URLs. Separate multiple URLs with commas.
                       </p>
                       <FormMessage />
                     </FormItem>
