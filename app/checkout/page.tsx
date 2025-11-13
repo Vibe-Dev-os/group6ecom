@@ -193,7 +193,7 @@ export default function CheckoutPage() {
                     <input
                       type="email"
                       name="email"
-                      placeholder="Email address"
+                      placeholder="Email address *"
                       value={formData.email}
                       onChange={handleInputChange}
                       required
@@ -202,7 +202,7 @@ export default function CheckoutPage() {
                     <input
                       type="tel"
                       name="phone"
-                      placeholder="Mobile number (e.g., 09171234567)"
+                      placeholder="Mobile number (e.g., 09171234567) *"
                       value={formData.phone}
                       onChange={handleInputChange}
                       required
@@ -241,15 +241,16 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         name="firstName"
-                        placeholder="First name (optional)"
+                        placeholder="First name *"
                         value={formData.firstName}
                         onChange={handleInputChange}
+                        required
                         className="h-12 w-full rounded-md border border-white/30 bg-background px-4 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/50"
                       />
                       <input
                         type="text"
                         name="lastName"
-                        placeholder="Last name"
+                        placeholder="Last name *"
                         value={formData.lastName}
                         onChange={handleInputChange}
                         required
@@ -260,7 +261,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       name="address"
-                      placeholder="House No., Building, Street Name"
+                      placeholder="House No., Building, Street Name *"
                       value={formData.address}
                       onChange={handleInputChange}
                       required
@@ -270,7 +271,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       name="barangay"
-                      placeholder="Barangay"
+                      placeholder="Barangay *"
                       value={formData.barangay}
                       onChange={handleInputChange}
                       required
@@ -290,7 +291,7 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         name="city"
-                        placeholder="City"
+                        placeholder="City *"
                         value={formData.city}
                         onChange={handleInputChange}
                         required
@@ -325,7 +326,7 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         name="zipCode"
-                        placeholder="Postal/ZIP Code"
+                        placeholder="Postal/ZIP Code *"
                         value={formData.zipCode}
                         onChange={handleInputChange}
                         required
